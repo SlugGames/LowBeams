@@ -23,16 +23,163 @@
  */
 package com.sluggames.software.LowBeams;
 
+import java.net.URL;
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- * This is the main application class, serving as the entry point.
+ * This is the main application class. In addition to serving as the application
+ * entry point, it contains basic application information, such as
+ * {@link #APPLICATION_TITLE title} and
+ * {@link #APPLICATION_VERSION_STRING version}.
  *
  *
  * @author david.boeger@sluggames.com
+ *
+ * @version 0.0.0
+ * @since 0.0.0
  */
 public class LowBeams extends Application {
+	/*
+		*******************************
+		*** APPLICATION INFORMATION ***
+		*******************************
+	*/
+	/*
+			---------
+			| TITLE |
+			---------
+	*/
+	public static final String APPLICATION_TITLE = "Low Beams";
+
+	/*
+			-----------
+			| VERSION |
+			-----------
+	*/
+	/*
+				\\\\\\\\\\\\\\\\
+				\ MAJOR NUMBER \
+				\\\\\\\\\\\\\\\\
+
+	Differences in the major version number indicate a conscious choice by
+	the application developer to identify a distinctly separate new version
+	of the application. While there are no strict rules for when to declare
+	a new major version, the important thing to note is that it does not
+	merely capture a change to an existing application, but a conscious
+	decision to identify as a new application. For this reason, new major
+	versions are generally forked into new projects from legacy versions,
+	enabling developers to support multiple major versions simultaneously.
+	Some common reasons to begin development of a new major version include:
+
+		1)	An intentional break from compatibility with a previous
+			version, in order to accomodate new features or remove
+			deprecated ones.
+
+		2)	An expanded or otherwise improved feature set, which
+			either meets large new design goals or opens up the
+			possibility of new use cases.
+
+		3)	Support for new target platforms, deployment methods,
+			and/or problem domains.
+
+		4)	Any uniquely identifiable shift in direction which is
+			combined with a new marketing campaign designed to
+			attract new users.
+
+	Perhaps the only exception would be major version number 0, which
+	philosophically belongs to version 1, but indicates that it has yet to
+	reach a stable, feature-complete state. The major version number should
+	be bumped to 1 once the application meets its original design goals and
+	is ready for full deployment.
+
+	Upon incrementing the major version number, both the minor and revision
+	version numbers should be reset to 0.
+	*/
+	public static final int MAJOR_VERSION_NUMBER = 0;
+
+	/*
+				\\\\\\\\\\\\\\\\
+				\ MINOR NUMBER \
+				\\\\\\\\\\\\\\\\
+
+	Unlike the major version number, the minor version does not represent
+	arbitrary development decisions. Instead, increments correspond to
+	individual feature changes and enhancements. Most gradual evolution of
+	applications takes the form of these incremental minor changes.
+
+	Upon incrementing the minor version number, the revision version number
+	should be reset to 0.
+	*/
+	public static final int MINOR_VERSION_NUMBER = 0;
+
+	/*
+				\\\\\\\\\\\\\\\\\\\
+				\ REVISION NUMBER \
+				\\\\\\\\\\\\\\\\\\\
+
+	Finally, the revision version number should correspond to changes that
+	do not affect the application's design or intended functionality. The
+	typical example would be bug fixes or spelling corrections.
+	*/
+	public static final int REVISION_VERSION_NUMBER = 0;
+
+	/*
+				\\\\\\\\\\
+				\ STRING \
+				\\\\\\\\\\
+
+	The complete version string should be of the following form:
+
+		<MAJOR>.<MINOR>.<REVISION>
+	*/
+	public static final String APPLICATION_VERSION_STRING =
+	    MAJOR_VERSION_NUMBER + "." +
+	    MINOR_VERSION_NUMBER + "." +
+	    REVISION_VERSION_NUMBER;
+
+
+	/*
+			--------
+			| LOGO |
+			--------
+	*/
+	/*
+				\\\\\\\\
+				\ ICON \
+				\\\\\\\\
+
+	Icons are small images to be used by the desktop environment in system
+	areas, such as task bars and window decorations, for easy identification
+	by users. The application logo icon should be an image with a small
+	resolution, as it will likely be downsized by the OS to fit in small
+	areas. 128x128 seems to work well in practice, as it is large enough to
+	display prominently in JavaFX interfaces, but small enough to be usable
+	by typical OS configurations.
+	*/
+	/*
+					///////
+					/ URL /
+					///////
+	*/
+	public static final URL APPLICATION_LOGO_ICON_URL =
+	    LowBeams.class.getResource("resources/images/Logo Icon.png");
+
+	/*
+					/////////
+					/ IMAGE /
+					/////////
+	*/
+	public static final Image APPLICATION_LOGO_ICON_IMAGE =
+	    new Image(APPLICATION_LOGO_ICON_URL.toString());
+
+
 	/*
 		**************
 		*** LAUNCH ***
@@ -66,6 +213,10 @@ public class LowBeams extends Application {
 			to provide the main method just in case.
 	*/
 	public static void main(String[] args) {
+		/*
+		Launch the JavaFX platform.
+		*/
+		launch(args);
 	}
 
 	/*
@@ -79,7 +230,22 @@ public class LowBeams extends Application {
 	main method may be necessary for the cases described above.
 	*/
 	@Override
-	public void start(Stage primaryStage) throws Exception {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public void start(Stage primaryStage) {
+		/*
+		Set the primary stage to utilize the application information for
+		verification. This can be removed once application logic is
+		implemented.
+		*/
+		VBox root = new VBox();
+		root.setPadding(new Insets(50, 50, 50, 50));
+		root.setSpacing(10);
+		root.getChildren().add(new Text(APPLICATION_TITLE));
+		root.getChildren().add(new Text(APPLICATION_VERSION_STRING));
+		root.getChildren().add(new ImageView(APPLICATION_LOGO_ICON_IMAGE));
+
+		primaryStage.setTitle(APPLICATION_TITLE);
+		primaryStage.getIcons().add(APPLICATION_LOGO_ICON_IMAGE);
+		primaryStage.setScene(new Scene(root));
+		primaryStage.show();
 	}
 }
