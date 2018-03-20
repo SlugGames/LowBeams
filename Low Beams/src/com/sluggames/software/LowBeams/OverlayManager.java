@@ -38,9 +38,16 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
+ * This class manages a single overlay. In addition to encapsulating all related
+ * components, it implements any corresponding application logic. It is
+ * important to note that this class automatically creates the necessary
+ * {@link javafx.stage.Stage} upon construction, so no further action is
+ * required to begin using the overlay.
+ *
+ *
  * @author david.boeger@sluggames.com
  *
- * @version 0.1.0
+ * @version 0.2.0
  * @since 0.1.0
  */
 public class OverlayManager {
@@ -162,6 +169,15 @@ public class OverlayManager {
 		Set the stage to display the prepared scene.
 		*/
 		stage.setScene(scene);
+	}
+
+	/*
+				\\\\\\\
+				\ GET \
+				\\\\\\\
+	*/
+	public OverlayController getController() {
+		return controller;
 	}
 
 

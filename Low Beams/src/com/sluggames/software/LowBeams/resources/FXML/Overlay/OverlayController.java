@@ -42,6 +42,7 @@ import javafx.scene.shape.Rectangle;
  * properties which are necessary for integration with the main application
  * logic, it also implements the cursor tracking logic internally.
  *
+ *
  * @author david.boeger@sluggames.com
  *
  * @version 0.1.0

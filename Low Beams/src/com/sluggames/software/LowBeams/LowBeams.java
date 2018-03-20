@@ -37,7 +37,7 @@ import javafx.stage.Stage;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.1.0
+ * @version 0.2.0
  * @since 0.0.0
  */
 public class LowBeams extends Application {
@@ -231,6 +231,18 @@ public class LowBeams extends Application {
 		initialization and operation of a single overlay on the primary
 		screen.
 		*/
-		new OverlayManager();
+		OverlayManager overlayManager = new OverlayManager();
+
+		/*
+		Create the preferences menu manager.
+		*/
+		PreferencesMenuManager preferencesMenuManager =
+		    new PreferencesMenuManager();
+
+		/*
+		Bind the overlay manager to the preferences menu manager so that
+		the user can adjust the overlay's properties.
+		*/
+		preferencesMenuManager.bindOverlayManager(overlayManager);
 	}
 }
