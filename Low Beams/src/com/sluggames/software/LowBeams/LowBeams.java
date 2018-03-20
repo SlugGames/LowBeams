@@ -25,12 +25,7 @@ package com.sluggames.software.LowBeams;
 
 import java.net.URL;
 import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
@@ -42,7 +37,7 @@ import javafx.stage.Stage;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.0.0
+ * @version 0.1.0
  * @since 0.0.0
  */
 public class LowBeams extends Application {
@@ -117,7 +112,7 @@ public class LowBeams extends Application {
 	Upon incrementing the minor version number, the revision version number
 	should be reset to 0.
 	*/
-	public static final int MINOR_VERSION_NUMBER = 0;
+	public static final int MINOR_VERSION_NUMBER = 1;
 
 	/*
 				\\\\\\\\\\\\\\\\\\\
@@ -230,22 +225,12 @@ public class LowBeams extends Application {
 	main method may be necessary for the cases described above.
 	*/
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage ignoredStage) {
 		/*
-		Set the primary stage to utilize the application information for
-		verification. This can be removed once application logic is
-		implemented.
+		Create a single overlay manager, which will handle the
+		initialization and operation of a single overlay on the primary
+		screen.
 		*/
-		VBox root = new VBox();
-		root.setPadding(new Insets(50, 50, 50, 50));
-		root.setSpacing(10);
-		root.getChildren().add(new Text(APPLICATION_TITLE));
-		root.getChildren().add(new Text(APPLICATION_VERSION_STRING));
-		root.getChildren().add(new ImageView(APPLICATION_LOGO_ICON_IMAGE));
-
-		primaryStage.setTitle(APPLICATION_TITLE);
-		primaryStage.getIcons().add(APPLICATION_LOGO_ICON_IMAGE);
-		primaryStage.setScene(new Scene(root));
-		primaryStage.show();
+		new OverlayManager();
 	}
 }

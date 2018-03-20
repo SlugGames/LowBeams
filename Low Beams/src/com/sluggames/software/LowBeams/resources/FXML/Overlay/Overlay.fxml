@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Rectangle?>
+
+<fx:root fx:id="gridPane" gridLinesVisible="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" type="GridPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+  <columnConstraints>
+    <ColumnConstraints />
+    <ColumnConstraints />
+      <ColumnConstraints />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints />
+    <RowConstraints />
+    <RowConstraints />
+  </rowConstraints>
+   <children>
+      <Rectangle fx:id="topLeftRectangle" />
+      <Rectangle fx:id="centerLeftRectangle" GridPane.rowIndex="1" />
+      <Rectangle fx:id="bottomLeftRectangle" GridPane.rowIndex="2" />
+      <Rectangle fx:id="topCenterRectangle" GridPane.columnIndex="1" />
+      <Rectangle fx:id="bottomCenterRectangle" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Rectangle fx:id="topRightRectangle" GridPane.columnIndex="2" />
+      <Rectangle fx:id="centerRightRectangle" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+      <Rectangle fx:id="bottomRightRectangle" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+   </children>
+</fx:root>
