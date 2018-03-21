@@ -36,6 +36,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 
 /**
  * This class manages a single overlay. In addition to encapsulating all related
@@ -47,7 +48,7 @@ import javafx.stage.StageStyle;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.2.0
+ * @version 0.3.0
  * @since 0.1.0
  */
 public class OverlayManager {
@@ -69,6 +70,22 @@ public class OverlayManager {
 				\\\\\\\\\\\\\\
 	*/
 	private void initializeStage() {
+		/*
+		Set a window event handler to ignore close requests on the
+		overlay stage. This prevents the user from directly closing
+		overlay stages, allowing them to be managed by the application
+		logic.
+		*/
+		stage.setOnCloseRequest((
+		    WindowEvent windowEvent
+		) -> {
+			/*
+			Ignoring window events is achieved by consuming them in
+			the event handler.
+			*/
+			windowEvent.consume();
+		});
+
 		/*
 		Set the stage title and icon to match the application.
 		*/

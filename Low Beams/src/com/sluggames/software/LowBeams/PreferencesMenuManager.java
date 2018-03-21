@@ -27,10 +27,12 @@ import com.sluggames.software.LowBeams.resources.FXML.PreferencesMenu.Preference
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  * This class manages the applications main preferences menu. In addition to
@@ -42,7 +44,7 @@ import javafx.stage.Stage;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.2.0
+ * @version 0.3.0
  * @since 0.2.0
  */
 public class PreferencesMenuManager {
@@ -64,6 +66,19 @@ public class PreferencesMenuManager {
 				//////////////
 	*/
 	private void initializeStage() {
+		/*
+		Set a window event handler to exit the application when the
+		preferences menu stage receives a close request.
+		*/
+		stage.setOnCloseRequest((
+		    WindowEvent windowEvent
+		) -> {
+			/*
+			Exit the JavaFX platform.
+			*/
+			Platform.exit();
+		});
+
 		/*
 		Set the stage title and icon to match the application.
 		*/
