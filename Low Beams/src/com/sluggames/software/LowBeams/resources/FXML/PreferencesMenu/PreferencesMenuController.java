@@ -24,6 +24,7 @@
 package com.sluggames.software.LowBeams.resources.FXML.PreferencesMenu;
 
 import com.sluggames.software.LowBeams.resources.FXML.Overlay.OverlayController;
+import com.sluggames.software.LowBeams.utility.DoubleToHertzFrequencyLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPixelLabelConverter;
 import com.sluggames.software.LowBeams.utility.NamedColor;
@@ -43,7 +44,7 @@ import javafx.scene.control.Slider;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.4.0
+ * @version 0.5.0
  * @since 0.2.0
  */
 public class PreferencesMenuController implements Initializable {
@@ -190,7 +191,6 @@ public class PreferencesMenuController implements Initializable {
 		opacitySlider.setMinorTickCount(
 		    OPACITY_SLIDER_MINOR_TICK_COUNT
 		);
-		opacitySlider.setShowTickMarks(true);
 
 		/*
 		Set the slider's tick mark label attributes.
@@ -198,7 +198,6 @@ public class PreferencesMenuController implements Initializable {
 		opacitySlider.setLabelFormatter(
 		    new DoubleToPercentageLabelConverter()
 		);
-		opacitySlider.setShowTickLabels(true);
 	}
 
 	/*
@@ -211,14 +210,99 @@ public class PreferencesMenuController implements Initializable {
 	}
 
 	/*
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-				\ CURSOR WINDOW DIMENSION SLIDERS \
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\\\\\\\\\\\\\\\\\
+				\ CURSOR WINDOW \
+				\\\\\\\\\\\\\\\\\
 	*/
 	/*
-					/////////
-					/ WIDTH /
-					/////////
+					/////////////////////////////
+					/ TRACKING FREQUENCY SLIDER /
+					/////////////////////////////
+	*/
+	public static final int CURSOR_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int CURSOR_TRACKING_FREQUENCY_SLIDER_MINOR_TICK_COUNT =
+	    CURSOR_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT - 2;
+
+	@FXML
+	private Slider cursorTrackingFrequencySlider;
+
+	/*
+						\\\\\\\\\
+						\ LABEL \
+						\\\\\\\\\
+	*/
+	@FXML
+	private Label cursorTrackingFrequencySliderLabel;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeCursorTrackingFrequencySlider() {
+		/*
+		Associate with the corresponding label.
+		*/
+		cursorTrackingFrequencySliderLabel.setLabelFor(
+		    cursorTrackingFrequencySlider
+		);
+
+		/*
+		Set the range of the slider to match the acceptable range of
+		values.
+		*/
+		cursorTrackingFrequencySlider.setMin(
+		    OverlayController.MINIMUM_CURSOR_TRACKING_FREQUENCY
+		);
+		cursorTrackingFrequencySlider.setMax(
+		    OverlayController.MAXIMUM_CURSOR_TRACKING_FREQUENCY
+		);
+
+		/*
+		Set the slider's value to match the default.
+		*/
+		cursorTrackingFrequencySlider.setValue(
+		    OverlayController.DEFAULT_CURSOR_TRACKING_FREQUENCY
+		);
+
+		/*
+		Set the slider's tick mark attributes.
+		*/
+		cursorTrackingFrequencySlider.setMajorTickUnit(
+		    (cursorTrackingFrequencySlider.getMax() -
+		    cursorTrackingFrequencySlider.getMin()) /
+		    (CURSOR_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT - 1)
+		);
+		cursorTrackingFrequencySlider.setMinorTickCount(
+		    CURSOR_TRACKING_FREQUENCY_SLIDER_MINOR_TICK_COUNT
+		);
+
+		/*
+		Set the slider's tick mark label attributes.
+		*/
+		cursorTrackingFrequencySlider.setLabelFormatter(
+		    new DoubleToHertzFrequencyLabelConverter()
+		);
+	}
+
+	/*
+						\\\\\\\
+						\ GET \
+						\\\\\\\
+	*/
+	public Slider getCursorTrackingFrequencySlider() {
+		return cursorTrackingFrequencySlider;
+	}
+
+	/*
+					/////////////////////
+					/ DIMENSION SLIDERS /
+					/////////////////////
+	*/
+	/*
+						\\\\\\\\\
+						\ WIDTH \
+						\\\\\\\\\
 	*/
 	public static final int CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT = 4;
 	public static final int CURSOR_WINDOW_WIDTH_SLIDER_MINOR_TICK_COUNT =
@@ -228,17 +312,17 @@ public class PreferencesMenuController implements Initializable {
 	private Slider cursorWindowWidthSlider;
 
 	/*
-						\\\\\\\\\
-						\ LABEL \
-						\\\\\\\\\
+							/////////
+							/ LABEL /
+							/////////
 	*/
 	@FXML
 	private Label cursorWindowWidthSliderLabel;
 
 	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
+							//////////////
+							/ INITIALIZE /
+							//////////////
 	*/
 	private void initializeCursorWindowWidthSlider() {
 		/*
@@ -277,7 +361,6 @@ public class PreferencesMenuController implements Initializable {
 		cursorWindowWidthSlider.setMinorTickCount(
 		    CURSOR_WINDOW_WIDTH_SLIDER_MINOR_TICK_COUNT
 		);
-		cursorWindowWidthSlider.setShowTickMarks(true);
 
 		/*
 		Set the slider's tick mark label attributes.
@@ -285,22 +368,21 @@ public class PreferencesMenuController implements Initializable {
 		cursorWindowWidthSlider.setLabelFormatter(
 		    new DoubleToPixelLabelConverter()
 		);
-		cursorWindowWidthSlider.setShowTickLabels(true);
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+							///////
+							/ GET /
+							///////
 	*/
 	public Slider getCursorWindowWidthSlider() {
 		return cursorWindowWidthSlider;
 	}
 
 	/*
-					//////////
-					/ HEIGHT /
-					//////////
+						\\\\\\\\\\
+						\ HEIGHT \
+						\\\\\\\\\\
 	*/
 	public static final int CURSOR_WINDOW_HEIGHT_SLIDER_MAJOR_TICK_COUNT =
 	    CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT;
@@ -311,17 +393,17 @@ public class PreferencesMenuController implements Initializable {
 	private Slider cursorWindowHeightSlider;
 
 	/*
-						\\\\\\\\\
-						\ LABEL \
-						\\\\\\\\\
+							/////////
+							/ LABEL /
+							/////////
 	*/
 	@FXML
 	private Label cursorWindowHeightSliderLabel;
 
 	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
+							//////////////
+							/ INITIALIZE /
+							//////////////
 	*/
 	private void initializeCursorWindowHeightSlider() {
 		/*
@@ -360,7 +442,6 @@ public class PreferencesMenuController implements Initializable {
 		cursorWindowHeightSlider.setMinorTickCount(
 		    CURSOR_WINDOW_HEIGHT_SLIDER_MINOR_TICK_COUNT
 		);
-		cursorWindowHeightSlider.setShowTickMarks(true);
 
 		/*
 		Set the slider's tick mark label attributes.
@@ -368,13 +449,12 @@ public class PreferencesMenuController implements Initializable {
 		cursorWindowHeightSlider.setLabelFormatter(
 		    new DoubleToPixelLabelConverter()
 		);
-		cursorWindowHeightSlider.setShowTickLabels(true);
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+							///////
+							/ GET /
+							///////
 	*/
 	public Slider getCursorWindowHeightSlider() {
 		return cursorWindowHeightSlider;
@@ -396,6 +476,7 @@ public class PreferencesMenuController implements Initializable {
 		*/
 		initializeBaseColorChoiceBox();
 		initializeOpacitySlider();
+		initializeCursorTrackingFrequencySlider();
 		initializeCursorWindowWidthSlider();
 		initializeCursorWindowHeightSlider();
 	}

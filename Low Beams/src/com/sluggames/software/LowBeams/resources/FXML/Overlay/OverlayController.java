@@ -25,6 +25,8 @@ package com.sluggames.software.LowBeams.resources.FXML.Overlay;
 
 import com.sluggames.software.LowBeams.utility.NamedColor;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
@@ -48,7 +50,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.4.0
+ * @version 0.5.0
  * @since 0.1.0
  */
 public class OverlayController implements Initializable {
@@ -200,26 +202,180 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-				\ CURSOR WINDOW DIMENSIONS \
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\\\\\\\\\\\\\\\\\
+				\ CURSOR WINDOW \
+				\\\\\\\\\\\\\\\\\
 	*/
 	/*
-					/////////
-					/ WIDTH /
-					/////////
+					//////////////////////
+					/ TRACKING FREQUENCY /
+					//////////////////////
 	*/
-	public static final double MINIMUM_CURSOR_WINDOW_WIDTH = 16;
-	public static final double MAXIMUM_CURSOR_WINDOW_WIDTH = 128;
-	public static final double DEFAULT_CURSOR_WINDOW_WIDTH = 32;
+	public static final double MINIMUM_CURSOR_TRACKING_FREQUENCY = 15;
+	public static final double MAXIMUM_CURSOR_TRACKING_FREQUENCY = 60;
+	public static final double DEFAULT_CURSOR_TRACKING_FREQUENCY = 30;
 
-	private final SimpleDoubleProperty cursorWindowWidthProperty =
-	    new SimpleDoubleProperty(DEFAULT_CURSOR_WINDOW_WIDTH);
+	private final SimpleDoubleProperty cursorTrackingFrequencyProperty =
+	    new SimpleDoubleProperty(DEFAULT_CURSOR_TRACKING_FREQUENCY);
 
 	/*
 						\\\\\\\\\\\\\\
 						\ INITIALIZE \
 						\\\\\\\\\\\\\\
+	*/
+	private void initializeCursorTrackingFrequencyProperty() {
+		/*
+		Add a change listener to the cursor tracking frequency property
+		which enforces the acceptable range.
+		*/
+		cursorTrackingFrequencyProperty.addListener((
+		    ObservableValue<? extends Number> cursorTrackingFrequencyObservableValue,
+		    Number cursorTrackingFrequencyOldValue,
+		    Number cursorTrackingFrequencyNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (cursorTrackingFrequencyNewValue == null) {
+				throw new NullPointerException(
+				    "cursorTrackingFrequencyNewValue == null"
+				);
+			}
+			if (cursorTrackingFrequencyNewValue.doubleValue() < MINIMUM_CURSOR_TRACKING_FREQUENCY) {
+				throw new IllegalStateException(
+				    "cursorTrackingFrequencyNewValue.doubleValue() (" + cursorTrackingFrequencyNewValue.doubleValue() + ")" +
+				    " < " +
+				    "MINIMUM_CURSOR_TRACKING_FREQUENCY (" + MINIMUM_CURSOR_TRACKING_FREQUENCY + ")"
+				);
+			}
+			if (cursorTrackingFrequencyNewValue.doubleValue() > MAXIMUM_CURSOR_TRACKING_FREQUENCY) {
+				throw new IllegalStateException(
+				    "cursorTrackingFrequencyNewValue.doubleValue() (" + cursorTrackingFrequencyNewValue.doubleValue() + ")" +
+				    " > " +
+				    "MAXIMUM_CURSOR_TRACKING_FREQUENCY (" + MAXIMUM_CURSOR_TRACKING_FREQUENCY + ")"
+				);
+			}
+		});
+
+		/*
+		Start a new animation timer, which is responsible for updating
+		the tracked cursor coordinates according to the cursor tracking
+		frequency.
+		*/
+		new AnimationTimer() {
+			/*
+			........................
+			... ACCUMULATED TIME ...
+			........................
+			*/
+			private Duration accumulatedTime = Duration.ZERO;
+
+			/*
+				...........................
+				... PREVIOUS PULSE TIME ...
+				...........................
+			*/
+			private Instant previousPulseTime = Instant.now();
+
+
+			/*
+			..............
+			... HANDLE ...
+			..............
+			*/
+			@Override
+			public void handle(long ignoredTime) {
+				/*
+				Calculdate the time elapsed between pulses.
+				*/
+				Instant currentPulseTime = Instant.now();
+				Duration elapsedTime = Duration.between(
+				    previousPulseTime,
+				    currentPulseTime
+				);
+				previousPulseTime = currentPulseTime;
+
+				/*
+				Accumulate the elapsed time.
+				*/
+				accumulatedTime =
+				    accumulatedTime.plus(
+				    elapsedTime
+				);
+
+				/*
+				Derive the cursor tracking time step from the
+				cursor tracking frequency.
+				*/
+				Duration cursorTrackingTimeStep =
+				    Duration.ofSeconds(1).dividedBy(
+				    cursorTrackingFrequencyProperty.getValue().longValue()
+				);
+
+				/*
+				Check if the time accumulated exceeds the cursor
+				tracking time step.
+				*/
+				if (accumulatedTime.compareTo(cursorTrackingTimeStep) >= 0) {
+					/*
+					If so, update the tracked cursor
+					coordinates.
+					*/
+					trackedCursorXProperty.set(latestCursorX);
+					trackedCursorYProperty.set(latestCursorY);
+
+					/*
+					Repeatedly consume accumulated time in
+					chunks equal to the cursor tracking time
+					step, until left with the remainder.
+					This could technically be achieved as a
+					constant-time division operation, but
+					subtraction preserves the precision of
+					integer arithmetic, and is effectively
+					bounded above by the maximum cursor
+					tracking frequency.
+					*/
+					while (accumulatedTime.compareTo(cursorTrackingTimeStep) >= 0) {
+						accumulatedTime =
+						    accumulatedTime.minus(
+						    cursorTrackingTimeStep
+						);
+					}
+				}
+			}
+		}.start();
+	}
+
+	/*
+						\\\\\\\
+						\ GET \
+						\\\\\\\
+	*/
+	public DoubleProperty getCursorTrackingFrequencyProperty() {
+		return cursorTrackingFrequencyProperty;
+	}
+
+	/*
+					//////////////
+					/ DIMENSIONS /
+					//////////////
+	*/
+	/*
+						\\\\\\\\\
+						\ WIDTH \
+						\\\\\\\\\
+	*/
+	public static final double MINIMUM_CURSOR_WINDOW_WIDTH = 16;
+	public static final double MAXIMUM_CURSOR_WINDOW_WIDTH = 128;
+	public static final double DEFAULT_CURSOR_WINDOW_WIDTH = 64;
+
+	private final SimpleDoubleProperty cursorWindowWidthProperty =
+	    new SimpleDoubleProperty(DEFAULT_CURSOR_WINDOW_WIDTH);
+
+	/*
+							//////////////
+							/ INITIALIZE /
+							//////////////
 	*/
 	private void initializeCursorWindowWidthProperty() {
 		/*
@@ -257,18 +413,18 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+							///////
+							/ GET /
+							///////
 	*/
 	public DoubleProperty getCursorWindowWidthProperty() {
 		return cursorWindowWidthProperty;
 	}
 
 	/*
-					//////////
-					/ HEIGHT /
-					//////////
+						\\\\\\\\\\
+						\ HEIGHT \
+						\\\\\\\\\\
 	*/
 	public static final double MINIMUM_CURSOR_WINDOW_HEIGHT =
 	    MINIMUM_CURSOR_WINDOW_WIDTH;
@@ -281,9 +437,9 @@ public class OverlayController implements Initializable {
 	    new SimpleDoubleProperty(DEFAULT_CURSOR_WINDOW_HEIGHT);
 
 	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
+							//////////////
+							/ INITIALIZE /
+							//////////////
 	*/
 	private void initializeCursorWindowHeightProperty() {
 		/*
@@ -321,9 +477,9 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+							///////
+							/ GET /
+							///////
 	*/
 	public DoubleProperty getCursorWindowHeightProperty() {
 		return cursorWindowHeightProperty;
@@ -611,32 +767,6 @@ public class OverlayController implements Initializable {
 
 
 	/*
-		********************
-		*** CONSTRUCTION ***
-		********************
-	*/
-	public OverlayController() {
-		/*
-		Start a new animation timer, which fires once per JavaFX pulse.
-		*/
-		new AnimationTimer() {
-			@Override
-			public void handle(long ignoredTime) {
-				/*
-				Because the JavaFX pulse rate is typically
-				capped at a frequency of 60 Hz, this is an
-				appropriate place to synchronize the tracked
-				cursor coordinate properties with the latest
-				available coordinates.
-				*/
-				trackedCursorXProperty.set(latestCursorX);
-				trackedCursorYProperty.set(latestCursorY);
-			}
-		}.start();
-	}
-
-
-	/*
 		******************
 		*** INITIALIZE ***
 		******************
@@ -648,6 +778,7 @@ public class OverlayController implements Initializable {
 		*/
 		initializeBaseColorProperty();
 		initializeOpacityProperty();
+		initializeCursorTrackingFrequencyProperty();
 		initializeCursorWindowWidthProperty();
 		initializeCursorWindowHeightProperty();
 

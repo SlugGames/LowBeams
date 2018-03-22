@@ -34,7 +34,7 @@ import javafx.util.StringConverter;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.2.0
+ * @version 0.5.0
  * @since 0.2.0
  */
 public class DoubleToPixelLabelConverter extends StringConverter<Double> {
@@ -54,6 +54,15 @@ public class DoubleToPixelLabelConverter extends StringConverter<Double> {
 	@Override
 	public String toString(Double value) {
 		/*
+		Validate arguments.
+		*/
+		if (value == null) {
+			throw new NullPointerException(
+			    "value == null"
+			);
+		}
+
+		/*
 		Use only the integer value of the double to avoid lengthy
 		decimals, and append the pixel label suffix.
 		*/
@@ -70,6 +79,15 @@ public class DoubleToPixelLabelConverter extends StringConverter<Double> {
 	*/
 	@Override
 	public Double fromString(String pixelLabel) {
+		/*
+		Validate arguments.
+		*/
+		if (pixelLabel == null) {
+			throw new NullPointerException(
+			    "pixelLabel == null"
+			);
+		}
+
 		/*
 		After removing the suffix from the pixel label string, parse and
 		return the double value.

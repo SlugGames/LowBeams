@@ -26,30 +26,30 @@ package com.sluggames.software.LowBeams.utility;
 import javafx.util.StringConverter;
 
 /**
- * This class converts between double values and percentage label strings. It is
- * intended to be used for percentage slider tick mark labeling. For example,
- * the double value {@code 0.4} would be converted to the label string
- * {@code "40%"}.
+ * This class converts between double values and Hertz frequency label strings.
+ * It is intended to be used for frequency slider tick mark labeling. For
+ * example, the double value {@code 25} would be converted to the label string
+ * {@code "25 Hz"}.
  *
  *
  * @author david.boeger@sluggames.com
  *
  * @version 0.5.0
- * @since 0.4.0
+ * @since 0.5.0
  */
-public class DoubleToPercentageLabelConverter extends StringConverter<Double> {
+public class DoubleToHertzFrequencyLabelConverter extends StringConverter<Double> {
 	/*
 		**************
 		*** SUFFIX ***
 		**************
 	*/
-	public static final String SUFFIX = "%";
+	public static final String SUFFIX = " Hz";
 
 
 	/*
-		*****************
-		*** TO STRING ***
-		*****************
+		*******************
+		*** FROM STRING ***
+		*******************
 	*/
 	@Override
 	public String toString(Double value) {
@@ -63,39 +63,38 @@ public class DoubleToPercentageLabelConverter extends StringConverter<Double> {
 		}
 
 		/*
-		Convert the value to a percentage by multiplying by 100. Use
-		only the integer value of the result to avoid lengthy decimals,
-		and append the percentage label suffix.
+		Use only the integer value of the double to avoid lengthy
+		decimals, and append the Hertz frequency label suffix.
 		*/
 		return
-		    (int)(value * 100) +
+		    value.intValue() +
 		    SUFFIX;
 	}
 
 
 	/*
-		*******************
-		*** FROM STRING ***
-		*******************
+		*****************
+		*** TO STRING ***
+		*****************
 	*/
 	@Override
-	public Double fromString(String percentageLabel) {
+	public Double fromString(String hertzFrequencyLabel) {
 		/*
 		Validate arguments.
 		*/
-		if (percentageLabel == null) {
+		if (hertzFrequencyLabel == null) {
 			throw new NullPointerException(
-			    "percentageLabel == null"
+			    "hertzFrequencyLabel == null"
 			);
 		}
 
 		/*
-		After removing the suffix from the percentage label string,
-		parse and return the double value divided by 100.
+		After removing the suffix from the Hertz frequency label string,
+		parse and return the double value.
 		*/
 		return
 		    Double.parseDouble(
-		    percentageLabel.replace(SUFFIX, "")) /
-		    100;
+		    hertzFrequencyLabel.replace(SUFFIX, "")
+		);
 	}
 }
