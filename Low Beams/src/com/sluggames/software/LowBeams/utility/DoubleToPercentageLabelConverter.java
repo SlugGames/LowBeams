@@ -26,24 +26,24 @@ package com.sluggames.software.LowBeams.utility;
 import javafx.util.StringConverter;
 
 /**
- * This class converts between double values and pixel label strings. It is
- * intended to be used for dimension slider tick mark labeling. For example, the
- * double value {@code 20.0} would be converted to the label string
- * {@code "20 px"}.
+ * This class converts between double values and percentage label strings. It is
+ * intended to be used for percentage slider tick mark labeling. For example,
+ * the double value {@code 0.4} would be converted to the label string
+ * {@code "40%"}.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.2.0
- * @since 0.2.0
+ * @version 0.4.0
+ * @since 0.4.0
  */
-public class DoubleToPixelLabelConverter extends StringConverter<Double> {
+public class DoubleToPercentageLabelConverter extends StringConverter<Double> {
 	/*
 		**************
 		*** SUFFIX ***
 		**************
 	*/
-	public static final String SUFFIX = " px";
+	public static final String SUFFIX = "%";
 
 
 	/*
@@ -54,11 +54,12 @@ public class DoubleToPixelLabelConverter extends StringConverter<Double> {
 	@Override
 	public String toString(Double value) {
 		/*
-		Use only the integer value of the double to avoid lengthy
-		decimals, and append the pixel label suffix.
+		Convert the value to a percentage by multiplying by 100. Use
+		only the integer value of the result to avoid lengthy decimals,
+		and append the percentage label suffix.
 		*/
 		return
-		    value.intValue() +
+		    (int)(value * 100) +
 		    SUFFIX;
 	}
 
@@ -69,14 +70,14 @@ public class DoubleToPixelLabelConverter extends StringConverter<Double> {
 		*******************
 	*/
 	@Override
-	public Double fromString(String pixelLabel) {
+	public Double fromString(String percentageLabel) {
 		/*
-		After removing the suffix from the pixel label string, parse and
-		return the double value.
+		After removing the suffix from the percentage label string,
+		parse and return the double value divided by 100.
 		*/
 		return
 		    Double.parseDouble(
-		    pixelLabel.replace(SUFFIX, "")
-		);
+		    percentageLabel.replace(SUFFIX, "")) /
+		    100;
 	}
 }

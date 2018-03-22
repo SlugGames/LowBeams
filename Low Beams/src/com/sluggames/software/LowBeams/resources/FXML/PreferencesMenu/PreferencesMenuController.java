@@ -24,11 +24,15 @@
 package com.sluggames.software.LowBeams.resources.FXML.PreferencesMenu;
 
 import com.sluggames.software.LowBeams.resources.FXML.Overlay.OverlayController;
+import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPixelLabelConverter;
+import com.sluggames.software.LowBeams.utility.NamedColor;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 
@@ -39,7 +43,7 @@ import javafx.scene.control.Slider;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.2.0
+ * @version 0.4.0
  * @since 0.2.0
  */
 public class PreferencesMenuController implements Initializable {
@@ -63,6 +67,149 @@ public class PreferencesMenuController implements Initializable {
 			| COMPONENTS |
 			--------------
 	*/
+	/*
+				\\\\\\\\\
+				\ COLOR \
+				\\\\\\\\\
+	*/
+	/*
+					///////////////////////////////
+					/ BASE NAMED COLOR CHOICE BOX /
+					///////////////////////////////
+	*/
+	@FXML
+	private ChoiceBox<NamedColor> baseColorChoiceBox;
+
+	/*
+						\\\\\\\\\
+						\ LABEL \
+						\\\\\\\\\
+	*/
+	@FXML
+	private Label baseColorChoiceBoxLabel;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeBaseColorChoiceBox() {
+		/*
+		Associate with the corresponding label.
+		*/
+		baseColorChoiceBoxLabel.setLabelFor(baseColorChoiceBox);
+
+		/*
+		Populate the base color choice box with all the named colors,
+		except for transparent, as transparency will be controlled by
+		the opacity slider.
+		*/
+		baseColorChoiceBox.getItems().addAll(
+		    Arrays.asList(NamedColor.values())
+		);
+		baseColorChoiceBox.getItems().remove(
+		    NamedColor.TRANSPARENT
+		);
+
+		/*
+		Set the default base color according to the default in the
+		overlay controller.
+		*/
+		baseColorChoiceBox.setValue(
+		    OverlayController.DEFAULT_BASE_COLOR
+		);
+	}
+
+	/*
+						\\\\\\\
+						\ GET \
+						\\\\\\\
+	*/
+	public ChoiceBox getBaseColorChoiceBox() {
+		return baseColorChoiceBox;
+	}
+
+	/*
+					//////////////////
+					/ OPACITY SLIDER /
+					//////////////////
+	*/
+	public static final int OPACITY_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int OPACITY_SLIDER_MINOR_TICK_COUNT =
+	    OPACITY_SLIDER_MAJOR_TICK_COUNT - 2;
+
+	@FXML
+	private Slider opacitySlider;
+
+	/*
+						\\\\\\\\\
+						\ LABEL \
+						\\\\\\\\\
+	*/
+	@FXML
+	private Label opacitySliderLabel;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeOpacitySlider() {
+		/*
+		Associate with the corresponding label.
+		*/
+		opacitySliderLabel.setLabelFor(
+		    opacitySlider
+		);
+
+		/*
+		Set the range of the slider to match the acceptable range of
+		values.
+		*/
+		opacitySlider.setMin(
+		    OverlayController.MINIMUM_OPACITY
+		);
+		opacitySlider.setMax(
+		    OverlayController.MAXIMUM_OPACITY
+		);
+
+		/*
+		Set the slider's value to match the default.
+		*/
+		opacitySlider.setValue(
+		    OverlayController.DEFAULT_OPACITY
+		);
+
+		/*
+		Set the slider's tick mark attributes.
+		*/
+		opacitySlider.setMajorTickUnit(
+		    (opacitySlider.getMax() - opacitySlider.getMin()) /
+		    (OPACITY_SLIDER_MAJOR_TICK_COUNT - 1)
+		);
+		opacitySlider.setMinorTickCount(
+		    OPACITY_SLIDER_MINOR_TICK_COUNT
+		);
+		opacitySlider.setShowTickMarks(true);
+
+		/*
+		Set the slider's tick mark label attributes.
+		*/
+		opacitySlider.setLabelFormatter(
+		    new DoubleToPercentageLabelConverter()
+		);
+		opacitySlider.setShowTickLabels(true);
+	}
+
+	/*
+						\\\\\\\
+						\ GET \
+						\\\\\\\
+	*/
+	public Slider getOpacitySlider() {
+		return opacitySlider;
+	}
+
 	/*
 				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 				\ CURSOR WINDOW DIMENSION SLIDERS \
@@ -247,6 +394,8 @@ public class PreferencesMenuController implements Initializable {
 		/*
 		Initialize FXML components.
 		*/
+		initializeBaseColorChoiceBox();
+		initializeOpacitySlider();
 		initializeCursorWindowWidthSlider();
 		initializeCursorWindowHeightSlider();
 	}
