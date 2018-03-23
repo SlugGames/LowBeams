@@ -46,7 +46,7 @@ import javafx.scene.control.Slider;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.6.0
+ * @version 0.7.0
  * @since 0.2.0
  */
 public class PreferencesMenuController implements Initializable {
@@ -88,7 +88,9 @@ public class PreferencesMenuController implements Initializable {
 		Set the selected value according to the default in the overlay
 		manager.
 		*/
-		enabledCheckBox.setSelected(OverlayManager.DEFAULT_ENABLED);
+		enabledCheckBox.setSelected(
+		    OverlayManager.DEFAULT_ENABLED
+		);
 	}
 
 	/*
@@ -98,6 +100,38 @@ public class PreferencesMenuController implements Initializable {
 	*/
 	public CheckBox getEnabledCheckBox() {
 		return enabledCheckBox;
+	}
+
+	/*
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\ GRID LINES VISIBLE CHECK BOX \
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+	*/
+	@FXML
+	private CheckBox gridLinesVisibleCheckBox;
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeGridLinesVisibleCheckBox() {
+		/*
+		Set the selected value according to the default in the overlay
+		controller.
+		*/
+		gridLinesVisibleCheckBox.setSelected(
+		    OverlayController.DEFAULT_GRID_LINES_VISIBLE
+		);
+	}
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public CheckBox getGridLinesVisibleCheckBox() {
+		return gridLinesVisibleCheckBox;
 	}
 
 	/*
@@ -507,6 +541,7 @@ public class PreferencesMenuController implements Initializable {
 		Initialize FXML components.
 		*/
 		initializeEnabledCheckBox();
+		initializeGridLinesVisibleCheckBox();
 		initializeBaseColorChoiceBox();
 		initializeOpacitySlider();
 		initializeCursorTrackingFrequencySlider();

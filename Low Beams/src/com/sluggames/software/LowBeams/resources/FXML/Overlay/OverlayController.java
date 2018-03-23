@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -50,7 +51,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.5.0
+ * @version 0.7.0
  * @since 0.1.0
  */
 public class OverlayController implements Initializable {
@@ -64,6 +65,25 @@ public class OverlayController implements Initializable {
 			| EXPOSED |
 			-----------
 	*/
+	/*
+				\\\\\\\\\\\\\\\\\\\\\\
+				\ GRID LINES VISIBLE \
+				\\\\\\\\\\\\\\\\\\\\\\
+
+	This property is a bit unique in that it is already built into the grid
+	pane.
+	*/
+	public static final boolean DEFAULT_GRID_LINES_VISIBLE = false;
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public BooleanProperty getGridLinesVisibleProperty() {
+		return gridPane.gridLinesVisibleProperty();
+	}
+
 	/*
 				\\\\\\\\\
 				\ COLOR \
@@ -539,6 +559,13 @@ public class OverlayController implements Initializable {
 					//////////////
 	*/
 	private void initializeGridPane() {
+		/*
+		Set the grid lines visible property to match the default value.
+		*/
+		gridPane.setGridLinesVisible(
+		    DEFAULT_GRID_LINES_VISIBLE
+		);
+
 		/*
 		Set a mouse event listener which tracks the latest cursor
 		coordinates any time the mouse cursor is moved.

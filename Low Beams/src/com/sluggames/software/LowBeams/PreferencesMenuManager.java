@@ -44,7 +44,7 @@ import javafx.stage.WindowEvent;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.6.0
+ * @version 0.7.0
  * @since 0.2.0
  */
 public class PreferencesMenuManager {
@@ -169,6 +169,15 @@ public class PreferencesMenuManager {
 		*/
 		overlayManager.getEnabledProperty().bind(
 		    controller.getEnabledCheckBox().selectedProperty()
+		);
+
+		/*
+			....................................
+			... GRID LINES VISIBLE CHECK BOX ...
+			....................................
+		*/
+		overlayManager.getController().getGridLinesVisibleProperty().bind(
+		    controller.getGridLinesVisibleCheckBox().selectedProperty()
 		);
 
 		/*
