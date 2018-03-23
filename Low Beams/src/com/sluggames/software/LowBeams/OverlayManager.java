@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
@@ -48,10 +51,66 @@ import javafx.stage.WindowEvent;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.3.0
+ * @version 0.6.0
  * @since 0.1.0
  */
 public class OverlayManager {
+	/*
+		******************
+		*** PROPERTIES ***
+		******************
+	*/
+	/*
+			-----------
+			| EXPOSED |
+			-----------
+	*/
+	/*
+				\\\\\\\\\\\
+				\ ENABLED \
+				\\\\\\\\\\\
+	*/
+	public static final boolean DEFAULT_ENABLED = true;
+
+	private final SimpleBooleanProperty enabledProperty =
+	    new SimpleBooleanProperty(DEFAULT_ENABLED);
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeEnabledProperty() {
+		/*
+		Add a change listener to the check box to verify that new values
+		are valid.
+		*/
+		enabledProperty.addListener((
+		    ObservableValue<? extends Boolean> enabledObservableValue,
+		    Boolean enabledOldValue,
+		    Boolean enabledNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (enabledNewValue == null) {
+				throw new NullPointerException(
+				    "enabledNewValue == null"
+				);
+			}
+		});
+	}
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public BooleanProperty getEnabledProperty() {
+		return enabledProperty;
+	}
+
+
 	/*
 		******************
 		*** COMPONENTS ***
@@ -205,6 +264,11 @@ public class OverlayManager {
 	*/
 	public OverlayManager() {
 		/*
+		Initialize properties.
+		*/
+		initializeEnabledProperty();
+
+		/*
 		Initialize components.
 		*/
 		initializeStage();
@@ -216,13 +280,18 @@ public class OverlayManager {
 		new AnimationTimer() {
 			@Override
 			public void handle(long ignoredTime) {
-				/*
-				Repeatedly move the stage to the front, in case
-				the request to always be in front is not honored
-				by the OS due to platform restrictions or
-				insufficient permissions.
-				*/
-				stage.toFront();
+				if (enabledProperty.get()) {
+					/*
+					Repeatedly move the stage to the front, in case
+					the request to always be in front is not honored
+					by the OS due to platform restrictions or
+					insufficient permissions.
+					*/
+					stage.show();
+					stage.toFront();
+				} else {
+					stage.hide();
+				}
 			}
 		}.start();
 	}

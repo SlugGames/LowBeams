@@ -44,7 +44,7 @@ import javafx.stage.WindowEvent;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.5.0
+ * @version 0.6.0
  * @since 0.2.0
  */
 public class PreferencesMenuManager {
@@ -162,6 +162,15 @@ public class PreferencesMenuManager {
 		... BIND CONTROLS ...
 		.....................
 		*/
+		/*
+			.........................
+			... ENABLED CHECK BOX ...
+			.........................
+		*/
+		overlayManager.getEnabledProperty().bind(
+		    controller.getEnabledCheckBox().selectedProperty()
+		);
+
 		/*
 			.............
 			... COLOR ...

@@ -23,6 +23,7 @@
  */
 package com.sluggames.software.LowBeams.resources.FXML.PreferencesMenu;
 
+import com.sluggames.software.LowBeams.OverlayManager;
 import com.sluggames.software.LowBeams.resources.FXML.Overlay.OverlayController;
 import com.sluggames.software.LowBeams.utility.DoubleToHertzFrequencyLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -44,7 +46,7 @@ import javafx.scene.control.Slider;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.5.0
+ * @version 0.6.0
  * @since 0.2.0
  */
 public class PreferencesMenuController implements Initializable {
@@ -68,6 +70,36 @@ public class PreferencesMenuController implements Initializable {
 			| COMPONENTS |
 			--------------
 	*/
+	/*
+				\\\\\\\\\\\\\\\\\\\\\
+				\ ENABLED CHECK BOX \
+				\\\\\\\\\\\\\\\\\\\\\
+	*/
+	@FXML
+	private CheckBox enabledCheckBox;
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeEnabledCheckBox() {
+		/*
+		Set the selected value according to the default in the overlay
+		manager.
+		*/
+		enabledCheckBox.setSelected(OverlayManager.DEFAULT_ENABLED);
+	}
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public CheckBox getEnabledCheckBox() {
+		return enabledCheckBox;
+	}
+
 	/*
 				\\\\\\\\\
 				\ COLOR \
@@ -126,7 +158,7 @@ public class PreferencesMenuController implements Initializable {
 						\ GET \
 						\\\\\\\
 	*/
-	public ChoiceBox getBaseColorChoiceBox() {
+	public ChoiceBox<NamedColor> getBaseColorChoiceBox() {
 		return baseColorChoiceBox;
 	}
 
@@ -474,6 +506,7 @@ public class PreferencesMenuController implements Initializable {
 		/*
 		Initialize FXML components.
 		*/
+		initializeEnabledCheckBox();
 		initializeBaseColorChoiceBox();
 		initializeOpacitySlider();
 		initializeCursorTrackingFrequencySlider();

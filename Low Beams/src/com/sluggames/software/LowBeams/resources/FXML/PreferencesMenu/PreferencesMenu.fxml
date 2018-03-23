@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
@@ -20,20 +21,22 @@
             <RowConstraints />
             <RowConstraints />
             <RowConstraints />
+            <RowConstraints />
           <RowConstraints />
           <RowConstraints />
         </rowConstraints>
          <children>
-            <Label fx:id="baseColorChoiceBoxLabel" text="Color:" />
-            <ChoiceBox fx:id="baseColorChoiceBox" GridPane.columnIndex="1" />
-            <Label fx:id="opacitySliderLabel" text="Opacity:" GridPane.rowIndex="1" />
-            <Slider fx:id="opacitySlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label fx:id="cursorTrackingFrequencySliderLabel" text="Cursor Tracking Frequency:" GridPane.rowIndex="2" />
-            <Slider fx:id="cursorTrackingFrequencySlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label fx:id="cursorWindowWidthSliderLabel" text="Cursor Window Width:" GridPane.rowIndex="3" />
-            <Slider fx:id="cursorWindowWidthSlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label fx:id="cursorWindowHeightSliderLabel" text="Cursor Window Height:" GridPane.rowIndex="4" />
-            <Slider fx:id="cursorWindowHeightSlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <CheckBox fx:id="enabledCheckBox" mnemonicParsing="false" text="Overlay Enabled" />
+            <Label fx:id="baseColorChoiceBoxLabel" text="Color:" GridPane.rowIndex="1" />
+            <ChoiceBox fx:id="baseColorChoiceBox" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="opacitySliderLabel" text="Opacity:" GridPane.rowIndex="2" />
+            <Slider fx:id="opacitySlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label fx:id="cursorTrackingFrequencySliderLabel" text="Cursor Tracking Frequency:" GridPane.rowIndex="3" />
+            <Slider fx:id="cursorTrackingFrequencySlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label fx:id="cursorWindowWidthSliderLabel" text="Cursor Window Width:" GridPane.rowIndex="4" />
+            <Slider fx:id="cursorWindowWidthSlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label fx:id="cursorWindowHeightSliderLabel" text="Cursor Window Height:" GridPane.rowIndex="5" />
+            <Slider fx:id="cursorWindowHeightSlider" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
          </children>
          <padding>
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
