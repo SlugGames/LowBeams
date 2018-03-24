@@ -29,9 +29,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.GridPane;
@@ -51,7 +54,7 @@ import javafx.stage.WindowEvent;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.6.0
+ * @version 0.8.0
  * @since 0.1.0
  */
 public class OverlayManager {
@@ -65,6 +68,56 @@ public class OverlayManager {
 			| EXPOSED |
 			-----------
 	*/
+	/*
+				\\\\\\\\\\\\\\\\\
+				\ TARGET SCREEN \
+				\\\\\\\\\\\\\\\\\
+	*/
+	private final SimpleObjectProperty<Screen> targetScreenProperty =
+	    new SimpleObjectProperty<>(Screen.getPrimary());
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeTargetScreenProperty() {
+		/*
+		Add a change listener to the target screen property which
+		updates the internal target screen bounds property.
+		*/
+		targetScreenProperty.addListener((
+		    ObservableValue<? extends Screen> targetScreenObservableValue,
+		    Screen targetScreenOldValue,
+		    Screen targetScreenNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (targetScreenNewValue == null) {
+				throw new NullPointerException(
+				    "targetScreenNewValue == null"
+				);
+			}
+
+			/*
+			Update the target screen bounds property.
+			*/
+			targetScreenBoundsProperty.set(
+			    targetScreenNewValue.getBounds()
+			);
+		});
+	}
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public ObjectProperty<Screen> getTargetScreenProperty() {
+		return targetScreenProperty;
+	}
+
 	/*
 				\\\\\\\\\\\
 				\ ENABLED \
@@ -110,6 +163,54 @@ public class OverlayManager {
 		return enabledProperty;
 	}
 
+	/*
+			------------
+			| INTERNAL |
+			------------
+	*/
+	/*
+				\\\\\\\\\\\\\\\\\\\\\\\\
+				\ TARGET SCREEN BOUNDS \
+				\\\\\\\\\\\\\\\\\\\\\\\\
+
+	Even though the user controls the exposed target screen property, it's
+	the target screen's bounds themselves which are used to fit the stage to
+	the target screen.
+	*/
+	private final SimpleObjectProperty<Rectangle2D> targetScreenBoundsProperty =
+	    new SimpleObjectProperty<>(Screen.getPrimary().getBounds());
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeTargetScreenBoundsProperty() {
+		/*
+		Add a change listener to the target screen bounds property which
+		fits the stage to the target screen any time the bounds change.
+		*/
+		targetScreenBoundsProperty.addListener((
+		    ObservableValue<? extends Rectangle2D> targetScreenBoundsObservableValue,
+		    Rectangle2D targetScreenBoundsOldValue,
+		    Rectangle2D targetScreenBoundsNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (targetScreenBoundsNewValue == null) {
+				throw new NullPointerException(
+					"targetScreenBoundsNewValue == null"
+				);
+			}
+
+			/*
+			Fit the stage to the target screen's new bounds.
+			*/
+			fitStageToTargetScreenBounds();
+		});
+	}
+
 
 	/*
 		******************
@@ -152,13 +253,9 @@ public class OverlayManager {
 		stage.getIcons().add(LowBeams.APPLICATION_LOGO_ICON_IMAGE);
 
 		/*
-		Fit the stage to the primary screen. Eventually, the user should
-		be able to select which screen to target.
+		Fit the stage to the default target screen bounds.
 		*/
-		stage.setX(Screen.getPrimary().getBounds().getMinX());
-		stage.setY(Screen.getPrimary().getBounds().getMinY());
-		stage.setWidth(Screen.getPrimary().getBounds().getWidth());
-		stage.setHeight(Screen.getPrimary().getBounds().getHeight());
+		fitStageToTargetScreenBounds();
 
 		/*
 		Set the stage to always be in front. This setting doesn't always
@@ -169,18 +266,14 @@ public class OverlayManager {
 		stage.toFront();
 
 		/*
-		Set the stage to always be full-screen. This is not really
-		necessary with all the prior steps, but again, it's just a
-		backup.
+		Set the stage's full screen properties in such a way that it
+		minimizes unwanted visual distractions. This is not necessary,
+		as the stage should never be set to full screen, but if for
+		whatever reason it is, it would be annoying for users to have to
+		see exit hints or other unexpected intrusions.
 		*/
 		stage.setFullScreenExitHint("");
 		stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-		stage.setFullScreen(true);
-
-		/*
-		Show the stage.
-		*/
-		stage.show();
 	}
 
 	/*
@@ -264,9 +357,15 @@ public class OverlayManager {
 	*/
 	public OverlayManager() {
 		/*
-		Initialize properties.
+		Initialize exposed properties.
 		*/
+		initializeTargetScreenProperty();
 		initializeEnabledProperty();
+
+		/*
+		Initialize internal properties.
+		*/
+		initializeTargetScreenBoundsProperty();
 
 		/*
 		Initialize components.
@@ -280,19 +379,71 @@ public class OverlayManager {
 		new AnimationTimer() {
 			@Override
 			public void handle(long ignoredTime) {
+				/*
+				Check if the target screen's bounds have
+				changed. Unfortunately, it is not clear from the
+				JavaFX documentation whether or not the bounds
+				object of a screen can change. It seems likely
+				that any such changes to a screen would manifest
+				themselves as entirely new screen objects, but
+				the documentation does not provide any
+				definitive answers. Therefore, it is best to be
+				safe and check for updates.
+				*/
+				if (
+				    targetScreenProperty.get().getBounds() !=
+				    targetScreenBoundsProperty.get()
+				) {
+					/*
+					If so, update the target screen bounds
+					property to the new bounds, which should
+					refit the stage to the target screen.
+					*/
+					targetScreenBoundsProperty.set(
+					    targetScreenProperty.get().getBounds()
+					);
+				}
+
+				/*
+				Check if the enabled property is set to true.
+				*/
 				if (enabledProperty.get()) {
 					/*
-					Repeatedly move the stage to the front, in case
-					the request to always be in front is not honored
-					by the OS due to platform restrictions or
-					insufficient permissions.
+					If so, move the stage to the front, in
+					case the request to always be in front
+					is not honored by the OS due to platform
+					restrictions or insufficient
+					permissions.
 					*/
 					stage.show();
 					stage.toFront();
 				} else {
+					/*
+					Otherwise, hide the stage.
+					*/
 					stage.hide();
 				}
 			}
 		}.start();
+	}
+
+
+	/*
+		*****************************************
+		*** FIT STAGE TO TARGET SCREEN BOUNDS ***
+		*****************************************
+	*/
+	private void fitStageToTargetScreenBounds() {
+		/*
+		Set the stage's position to match the target screen bounds.
+		*/
+		stage.setX(targetScreenBoundsProperty.get().getMinX());
+		stage.setY(targetScreenBoundsProperty.get().getMinY());
+
+		/*
+		Set the stage's dimensions to match the target screen bounds.
+		*/
+		stage.setWidth(targetScreenBoundsProperty.get().getWidth());
+		stage.setHeight(targetScreenBoundsProperty.get().getHeight());
 	}
 }

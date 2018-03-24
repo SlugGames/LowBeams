@@ -29,6 +29,7 @@ import com.sluggames.software.LowBeams.utility.DoubleToHertzFrequencyLabelConver
 import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPixelLabelConverter;
 import com.sluggames.software.LowBeams.utility.NamedColor;
+import com.sluggames.software.LowBeams.utility.ScreenToShortLabelConverter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.ResourceBundle;
@@ -38,6 +39,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.stage.Screen;
 
 /**
  * This class is the controller for the preferences menu FXML. It primarily
@@ -46,7 +48,7 @@ import javafx.scene.control.Slider;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.7.0
+ * @version 0.8.0
  * @since 0.2.0
  */
 public class PreferencesMenuController implements Initializable {
@@ -70,6 +72,63 @@ public class PreferencesMenuController implements Initializable {
 			| COMPONENTS |
 			--------------
 	*/
+	/*
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\ TARGET SCREEN CHOICE BOX \
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+	*/
+	@FXML
+	private ChoiceBox<Screen> targetScreenChoiceBox;
+
+	/*
+					/////////
+					/ LABEL /
+					/////////
+	*/
+	@FXML
+	private Label targetScreenChoiceBoxLabel;
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeTargetScreenChoiceBox() {
+		/*
+		Associate with the corresponding label.
+		*/
+		targetScreenChoiceBoxLabel.setLabelFor(targetScreenChoiceBox);
+
+		/*
+		Set the target choice box's string converter to represent screen
+		objects by a short label, which is designed to appear more
+		user-friendly.
+		*/
+		targetScreenChoiceBox.setConverter(
+		    new ScreenToShortLabelConverter()
+		);
+
+		/*
+		Populate the target choice box with the list of available
+		screens.
+		*/
+		targetScreenChoiceBox.setItems(Screen.getScreens());
+
+		/*
+		Set the default target screen to the primary screen.
+		*/
+		targetScreenChoiceBox.setValue(Screen.getPrimary());
+	}
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public ChoiceBox<Screen> getTargetScreenChoiceBox() {
+		return targetScreenChoiceBox;
+	}
+
 	/*
 				\\\\\\\\\\\\\\\\\\\\\
 				\ ENABLED CHECK BOX \
@@ -540,6 +599,7 @@ public class PreferencesMenuController implements Initializable {
 		/*
 		Initialize FXML components.
 		*/
+		initializeTargetScreenChoiceBox();
 		initializeEnabledCheckBox();
 		initializeGridLinesVisibleCheckBox();
 		initializeBaseColorChoiceBox();
