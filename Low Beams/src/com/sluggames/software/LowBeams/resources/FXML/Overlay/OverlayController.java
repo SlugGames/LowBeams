@@ -23,7 +23,6 @@
  */
 package com.sluggames.software.LowBeams.resources.FXML.Overlay;
 
-import com.sluggames.software.LowBeams.utility.NamedColor;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -51,7 +50,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.7.0
+ * @version 0.9.0
  * @since 0.1.0
  */
 public class OverlayController implements Initializable {
@@ -71,7 +70,8 @@ public class OverlayController implements Initializable {
 				\\\\\\\\\\\\\\\\\\\\\\
 
 	This property is a bit unique in that it is already built into the grid
-	pane.
+	pane. As there is no need to create a separate property, any
+	initialization should be done as part of the grid pane's initialization.
 	*/
 	public static final boolean DEFAULT_GRID_LINES_VISIBLE = false;
 
@@ -89,136 +89,68 @@ public class OverlayController implements Initializable {
 				\ COLOR \
 				\\\\\\\\\
 	*/
-	/*
-					////////
-					/ BASE /
-					////////
-	*/
-	public static final NamedColor DEFAULT_BASE_COLOR = NamedColor.BLACK;
+	public static final Color DEFAULT_BASE_COLOR = Color.BLACK;
 
-	private final SimpleObjectProperty<NamedColor> baseColorProperty =
-	    new SimpleObjectProperty<>(DEFAULT_BASE_COLOR);
-
-	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
-	*/
-	private void initializeBaseColorProperty() {
-		/*
-		Add a change listener to the base color property which enforces
-		that base colors are completely opaque.
-		*/
-		baseColorProperty.addListener((
-		    ObservableValue<? extends NamedColor> baseColorObservableValue,
-		    NamedColor baseColorOldValue,
-		    NamedColor baseColorNewValue
-		) -> {
-			/*
-			Validate the new value.
-			*/
-			if (baseColorNewValue == null) {
-				throw new NullPointerException(
-				    "baseColorNewValue == null"
-				);
-			}
-			if (baseColorNewValue.getColor().getOpacity() != 1.0) {
-				throw new IllegalStateException(
-				    "baseColorNewValue.getColor().getOpacity() (" + baseColorNewValue.getColor().getOpacity() + ") != 1.0"
-				);
-			}
-
-			/*
-			Adjust the color property's RGB levels to match the new
-			value.
-			*/
-			colorProperty.set(new Color(
-			    baseColorNewValue.getColor().getRed(),
-			    baseColorNewValue.getColor().getGreen(),
-			    baseColorNewValue.getColor().getBlue(),
-			    colorProperty.get().getOpacity()
-			));
-		});
-	}
-
-	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
-	*/
-	public ObjectProperty<NamedColor> getBaseColorProperty() {
-		return baseColorProperty;
-	}
-
-	/*
-					///////////
-					/ OPACITY /
-					///////////
-	*/
 	public static final double MINIMUM_OPACITY = 0.3;
 	public static final double MAXIMUM_OPACITY = 0.7;
 	public static final double DEFAULT_OPACITY = 0.4;
 
-	private final SimpleDoubleProperty opacityProperty =
-	    new SimpleDoubleProperty(DEFAULT_OPACITY);
+	public static final Color DEFAULT_COLOR =
+	    Color.TRANSPARENT.interpolate(
+	    DEFAULT_BASE_COLOR,
+	    DEFAULT_OPACITY
+	);
+
+	private final SimpleObjectProperty<Color> colorProperty =
+	    new SimpleObjectProperty<>(DEFAULT_COLOR);
 
 	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
+					//////////////
+					/ INITIALIZE /
+					//////////////
 	*/
-	private void initializeOpacityProperty() {
+	private void initializeColorProperty() {
 		/*
-		Add a change listener to the opacity property which enforces the
-		acceptable range.
+		Add a change listener to the color property which enforces the
+		valid opacity range.
 		*/
-		opacityProperty.addListener((
-		    ObservableValue<? extends Number> opacityObservableValue,
-		    Number opacityOldValue,
-		    Number opacityNewValue
+		colorProperty.addListener((
+		    ObservableValue<? extends Color> colorObservableValue,
+		    Color colorOldValue,
+		    Color colorNewValue
 		) -> {
 			/*
 			Validate the new value.
 			*/
-			if (opacityNewValue == null) {
+			if (colorNewValue == null) {
 				throw new NullPointerException(
-				    "opacityNewValue == null"
+				    "colorNewValue == null"
 				);
 			}
-			if (opacityNewValue.doubleValue() < MINIMUM_OPACITY) {
-				throw new IllegalStateException(
-				    "opacityNewValue.doubleValue() (" + opacityNewValue.doubleValue() + ")" +
+			if (colorNewValue.getOpacity() < MINIMUM_OPACITY) {
+				throw new IllegalArgumentException(
+				    "colorNewValue.getOpacity() (" + colorNewValue.getOpacity() + ")" +
 				    " < " +
 				    "MINIMUM_OPACITY (" + MINIMUM_OPACITY + ")"
 				);
 			}
-			if (opacityNewValue.doubleValue() > MAXIMUM_OPACITY) {
-				throw new IllegalStateException(
-				    "opacityNewValue.doubleValue() (" + opacityNewValue.doubleValue() + ")" +
+			if (colorNewValue.getOpacity() > MAXIMUM_OPACITY) {
+				throw new IllegalArgumentException(
+				    "colorNewValue.getOpacity() (" + colorNewValue.getOpacity() + ")" +
 				    " > " +
 				    "MAXIMUM_OPACITY (" + MAXIMUM_OPACITY + ")"
 				);
 			}
-
-			/*
-			Adjust the color's opacity to match the new value.
-			*/
-			colorProperty.set(new Color(
-			    colorProperty.get().getRed(),
-			    colorProperty.get().getGreen(),
-			    colorProperty.get().getBlue(),
-			    opacityNewValue.doubleValue()
-			));
 		});
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+					///////
+					/ GET /
+					///////
 	*/
-	public DoubleProperty getOpacityProperty() {
-		return opacityProperty;
+	public ObjectProperty<Color> getColorProperty() {
+		return colorProperty;
 	}
 
 	/*
@@ -262,14 +194,14 @@ public class OverlayController implements Initializable {
 				);
 			}
 			if (cursorTrackingFrequencyNewValue.doubleValue() < MINIMUM_CURSOR_TRACKING_FREQUENCY) {
-				throw new IllegalStateException(
+				throw new IllegalArgumentException(
 				    "cursorTrackingFrequencyNewValue.doubleValue() (" + cursorTrackingFrequencyNewValue.doubleValue() + ")" +
 				    " < " +
 				    "MINIMUM_CURSOR_TRACKING_FREQUENCY (" + MINIMUM_CURSOR_TRACKING_FREQUENCY + ")"
 				);
 			}
 			if (cursorTrackingFrequencyNewValue.doubleValue() > MAXIMUM_CURSOR_TRACKING_FREQUENCY) {
-				throw new IllegalStateException(
+				throw new IllegalArgumentException(
 				    "cursorTrackingFrequencyNewValue.doubleValue() (" + cursorTrackingFrequencyNewValue.doubleValue() + ")" +
 				    " > " +
 				    "MAXIMUM_CURSOR_TRACKING_FREQUENCY (" + MAXIMUM_CURSOR_TRACKING_FREQUENCY + ")"
@@ -416,14 +348,14 @@ public class OverlayController implements Initializable {
 				);
 			}
 			if (cursorWindowWidthNewValue.doubleValue() < MINIMUM_CURSOR_WINDOW_WIDTH) {
-				throw new IllegalStateException(
+				throw new IllegalArgumentException(
 				    "cursorWindowWidthNewValue.doubleValue() (" + cursorWindowWidthNewValue.doubleValue() + ")" +
 				    " < " +
 				    "MINIMUM_CURSOR_WINDOW_WIDTH (" + MINIMUM_CURSOR_WINDOW_WIDTH + ")"
 				);
 			}
 			if (cursorWindowWidthNewValue.doubleValue() > MAXIMUM_CURSOR_WINDOW_WIDTH) {
-				throw new IllegalStateException(
+				throw new IllegalArgumentException(
 				    "cursorWindowWidthNewValue.doubleValue() (" + cursorWindowWidthNewValue.doubleValue() + ")" +
 				    " > " +
 				    "MAXIMUM_CURSOR_WINDOW_WIDTH (" + MAXIMUM_CURSOR_WINDOW_WIDTH + ")"
@@ -480,14 +412,14 @@ public class OverlayController implements Initializable {
 				);
 			}
 			if (cursorWindowHeightNewValue.doubleValue() < MINIMUM_CURSOR_WINDOW_HEIGHT) {
-				throw new IllegalStateException(
+				throw new IllegalArgumentException(
 				    "cursorWindowHeightNewValue.doubleValue() (" + cursorWindowHeightNewValue.doubleValue() + ")" +
 				    " < " +
 				    "MINIMUM_CURSOR_WINDOW_HEIGHT (" + MINIMUM_CURSOR_WINDOW_HEIGHT + ")"
 				);
 			}
 			if (cursorWindowHeightNewValue.doubleValue() > MAXIMUM_CURSOR_WINDOW_HEIGHT) {
-				throw new IllegalStateException(
+				throw new IllegalArgumentException(
 				    "cursorWindowHeightNewValue.doubleValue() (" + cursorWindowHeightNewValue.doubleValue() + ")" +
 				    " > " +
 				    "MAXIMUM_CURSOR_WINDOW_HEIGHT (" + MAXIMUM_CURSOR_WINDOW_HEIGHT + ")"
@@ -504,25 +436,6 @@ public class OverlayController implements Initializable {
 	public DoubleProperty getCursorWindowHeightProperty() {
 		return cursorWindowHeightProperty;
 	}
-
-	/*
-			------------
-			| INTERNAL |
-			------------
-	*/
-	/*
-				\\\\\\\\\
-				\ COLOR \
-				\\\\\\\\\
-	*/
-	public static final Color DEFAULT_COLOR =
-	    Color.TRANSPARENT.interpolate(
-	    DEFAULT_BASE_COLOR.getColor(),
-	    DEFAULT_OPACITY
-	);
-
-	private final SimpleObjectProperty<Color> colorProperty =
-	    new SimpleObjectProperty<>(DEFAULT_COLOR);
 
 
 	/*
@@ -803,8 +716,7 @@ public class OverlayController implements Initializable {
 		/*
 		Initialize properties.
 		*/
-		initializeBaseColorProperty();
-		initializeOpacityProperty();
+		initializeColorProperty();
 		initializeCursorTrackingFrequencyProperty();
 		initializeCursorWindowWidthProperty();
 		initializeCursorWindowHeightProperty();

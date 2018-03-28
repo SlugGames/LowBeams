@@ -37,7 +37,7 @@ import javafx.stage.Stage;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.8.0
+ * @version 0.9.0
  * @since 0.0.0
  */
 public class LowBeams extends Application {
@@ -112,7 +112,7 @@ public class LowBeams extends Application {
 	Upon incrementing the minor version number, the revision version number
 	should be reset to 0.
 	*/
-	public static final int MINOR_VERSION_NUMBER = 8;
+	public static final int MINOR_VERSION_NUMBER = 9;
 
 	/*
 				\\\\\\\\\\\\\\\\\\\

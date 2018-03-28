@@ -28,30 +28,78 @@ import com.sluggames.software.LowBeams.resources.FXML.Overlay.OverlayController;
 import com.sluggames.software.LowBeams.utility.DoubleToHertzFrequencyLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPixelLabelConverter;
-import com.sluggames.software.LowBeams.utility.NamedColor;
 import com.sluggames.software.LowBeams.utility.ScreenToShortLabelConverter;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 
 /**
  * This class is the controller for the preferences menu FXML. It primarily
  * exposes the relevant controls, as there is not much internal logic required.
+ * Currently, the only notable exception are the color controls. There are some
+ * incompatibilities between the overlay functionality and the standard JavaFX
+ * {@link javafx.scene.control.ColorPicker} control, so custom color controls
+ * are used instead. The consolidation logic for these color controls is
+ * implemented internally, and the resulting color is exposed as a property via
+ * the {@link #getColorProperty()} method.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.8.0
+ * @version 0.9.0
  * @since 0.2.0
  */
 public class PreferencesMenuController implements Initializable {
+	/*
+		******************
+		*** PROPERTIES ***
+		******************
+	*/
+	/*
+			-----------
+			| EXPOSED |
+			-----------
+	*/
+	/*
+				\\\\\\\\\
+				\ COLOR \
+				\\\\\\\\\
+	*/
+	private final SimpleObjectProperty<Color> colorProperty =
+	    new SimpleObjectProperty<>(OverlayController.DEFAULT_COLOR);
+
+	/*
+					//////////////
+					/ INITIALIZE /
+					//////////////
+	*/
+	private void initializeColorProperty() {
+		/*
+		There is currently nothing to initialize here, but the method is
+		provided as a guideline for future contributors.
+		*/
+	}
+
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public ObjectProperty<Color> getColorProperty() {
+		return colorProperty;
+	}
+
+
 	/*
 		************
 		*** FXML ***
@@ -199,60 +247,271 @@ public class PreferencesMenuController implements Initializable {
 				\\\\\\\\\
 	*/
 	/*
-					///////////////////////////////
-					/ BASE NAMED COLOR CHOICE BOX /
-					///////////////////////////////
+					///////////////
+					/ RGB SLIDERS /
+					///////////////
 	*/
+	/*
+						\\\\\\\
+						\ RED \
+						\\\\\\\
+	*/
+	public static final int RED_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int RED_SLIDER_MINOR_TICK_COUNT =
+	    RED_SLIDER_MAJOR_TICK_COUNT - 2;
+
 	@FXML
-	private ChoiceBox<NamedColor> baseColorChoiceBox;
+	private Slider redSlider;
 
 	/*
-						\\\\\\\\\
-						\ LABEL \
-						\\\\\\\\\
+							/////////
+							/ LABEL /
+							/////////
 	*/
 	@FXML
-	private Label baseColorChoiceBoxLabel;
+	private Label redSliderLabel;
 
 	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
+							//////////////
+							/ INITIALIZE /
+							//////////////
 	*/
-	private void initializeBaseColorChoiceBox() {
+	private void initializeRedSlider() {
 		/*
 		Associate with the corresponding label.
 		*/
-		baseColorChoiceBoxLabel.setLabelFor(baseColorChoiceBox);
+		redSliderLabel.setLabelFor(redSlider);
 
 		/*
-		Populate the base color choice box with all the named colors,
-		except for transparent, as transparency will be controlled by
-		the opacity slider.
+		Set the range of the slider to match the acceptable range of
+		values.
 		*/
-		baseColorChoiceBox.getItems().addAll(
-		    Arrays.asList(NamedColor.values())
-		);
-		baseColorChoiceBox.getItems().remove(
-		    NamedColor.TRANSPARENT
+		redSlider.setMin(Color.BLACK.getRed());
+		redSlider.setMax(Color.WHITE.getRed());
+
+		/*
+		Set the slider's value to match the default.
+		*/
+		redSlider.setValue(
+		    OverlayController.DEFAULT_COLOR.getRed()
 		);
 
 		/*
-		Set the default base color according to the default in the
-		overlay controller.
+		Set the slider's tick mark attributes.
 		*/
-		baseColorChoiceBox.setValue(
-		    OverlayController.DEFAULT_BASE_COLOR
+		redSlider.setMajorTickUnit(
+		    (redSlider.getMax() - redSlider.getMin()) /
+		    (RED_SLIDER_MAJOR_TICK_COUNT - 1)
 		);
+		redSlider.setMinorTickCount(
+		    RED_SLIDER_MINOR_TICK_COUNT
+		);
+
+		/*
+		Add a change listener to the slider which propagates changes to
+		the color property.
+		*/
+		redSlider.valueProperty().addListener((
+		    ObservableValue<? extends Number> redObservableValue,
+		    Number redOldValue,
+		    Number redNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (redNewValue == null) {
+				throw new NullPointerException(
+				    "redNewValue == null"
+				);
+			}
+
+			/*
+			Adjust the color property's red value to match the new
+			value.
+			*/
+			colorProperty.set(new Color(
+			    redNewValue.doubleValue(),
+			    colorProperty.get().getGreen(),
+			    colorProperty.get().getBlue(),
+			    colorProperty.get().getOpacity()
+			));
+		});
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+						\\\\\\\\\
+						\ GREEN \
+						\\\\\\\\\
 	*/
-	public ChoiceBox<NamedColor> getBaseColorChoiceBox() {
-		return baseColorChoiceBox;
+	public static final int GREEN_SLIDER_MAJOR_TICK_COUNT =
+	    RED_SLIDER_MAJOR_TICK_COUNT;
+	public static final int GREEN_SLIDER_MINOR_TICK_COUNT =
+	    GREEN_SLIDER_MAJOR_TICK_COUNT - 2;
+
+	@FXML
+	private Slider greenSlider;
+
+	/*
+							/////////
+							/ LABEL /
+							/////////
+	*/
+	@FXML
+	private Label greenSliderLabel;
+
+	/*
+							//////////////
+							/ INITIALIZE /
+							//////////////
+	*/
+	private void initializeGreenSlider() {
+		/*
+		Associate with the corresponding label.
+		*/
+		greenSliderLabel.setLabelFor(greenSlider);
+
+		/*
+		Set the range of the slider to match the acceptable range of
+		values.
+		*/
+		greenSlider.setMin(Color.BLACK.getRed());
+		greenSlider.setMax(Color.WHITE.getRed());
+
+		/*
+		Set the slider's value to match the default.
+		*/
+		greenSlider.setValue(
+		    OverlayController.DEFAULT_COLOR.getGreen()
+		);
+
+		/*
+		Set the slider's tick mark attributes.
+		*/
+		greenSlider.setMajorTickUnit(
+		    (greenSlider.getMax() - greenSlider.getMin()) /
+		    (GREEN_SLIDER_MAJOR_TICK_COUNT - 1)
+		);
+		greenSlider.setMinorTickCount(
+		    GREEN_SLIDER_MINOR_TICK_COUNT
+		);
+
+		/*
+		Add a change listener to the slider which propagates changes to
+		the color property.
+		*/
+		greenSlider.valueProperty().addListener((
+		    ObservableValue<? extends Number> greenObservableValue,
+		    Number greenOldValue,
+		    Number greenNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (greenNewValue == null) {
+				throw new NullPointerException(
+				    "greenNewValue == null"
+				);
+			}
+
+			/*
+			Adjust the color property's green value to match the new
+			value.
+			*/
+			colorProperty.set(new Color(
+			    colorProperty.get().getRed(),
+			    greenNewValue.doubleValue(),
+			    colorProperty.get().getBlue(),
+			    colorProperty.get().getOpacity()
+			));
+		});
+	}
+
+	/*
+						\\\\\\\\
+						\ BLUE \
+						\\\\\\\\
+	*/
+	public static final int BLUE_SLIDER_MAJOR_TICK_COUNT =
+	    RED_SLIDER_MAJOR_TICK_COUNT;
+	public static final int BLUE_SLIDER_MINOR_TICK_COUNT =
+	    BLUE_SLIDER_MAJOR_TICK_COUNT - 2;
+
+	@FXML
+	private Slider blueSlider;
+
+	/*
+							/////////
+							/ LABEL /
+							/////////
+	*/
+	@FXML
+	private Label blueSliderLabel;
+
+	/*
+							//////////////
+							/ INITIALIZE /
+							//////////////
+	*/
+	private void initializeBlueSlider() {
+		/*
+		Associate with the corresponding label.
+		*/
+		blueSliderLabel.setLabelFor(blueSlider);
+
+		/*
+		Set the range of the slider to match the acceptable range of
+		values.
+		*/
+		blueSlider.setMin(Color.BLACK.getRed());
+		blueSlider.setMax(Color.WHITE.getRed());
+
+		/*
+		Set the slider's value to match the default.
+		*/
+		blueSlider.setValue(
+		    OverlayController.DEFAULT_COLOR.getBlue()
+		);
+
+		/*
+		Set the slider's tick mark attributes.
+		*/
+		blueSlider.setMajorTickUnit(
+		    (blueSlider.getMax() - blueSlider.getMin()) /
+		    (BLUE_SLIDER_MAJOR_TICK_COUNT - 1)
+		);
+		blueSlider.setMinorTickCount(
+		    BLUE_SLIDER_MINOR_TICK_COUNT
+		);
+
+		/*
+		Add a change listener to the slider which propagates changes to
+		the color property.
+		*/
+		blueSlider.valueProperty().addListener((
+		    ObservableValue<? extends Number> blueObservableValue,
+		    Number blueOldValue,
+		    Number blueNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (blueNewValue == null) {
+				throw new NullPointerException(
+				    "blueNewValue == null"
+				);
+			}
+
+			/*
+			Adjust the color property's blue value to match the new
+			value.
+			*/
+			colorProperty.set(new Color(
+			    colorProperty.get().getRed(),
+			    colorProperty.get().getGreen(),
+			    blueNewValue.doubleValue(),
+			    colorProperty.get().getOpacity()
+			));
+		});
 	}
 
 	/*
@@ -323,15 +582,36 @@ public class PreferencesMenuController implements Initializable {
 		opacitySlider.setLabelFormatter(
 		    new DoubleToPercentageLabelConverter()
 		);
-	}
 
-	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
-	*/
-	public Slider getOpacitySlider() {
-		return opacitySlider;
+		/*
+		Add a change listener to the slider which propagates changes to
+		the color property.
+		*/
+		opacitySlider.valueProperty().addListener((
+		    ObservableValue<? extends Number> opacityObservableValue,
+		    Number opacityOldValue,
+		    Number opacityNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (opacityNewValue == null) {
+				throw new NullPointerException(
+				    "opacityNewValue == null"
+				);
+			}
+
+			/*
+			Adjust the color property's opacity value to match the
+			new value.
+			*/
+			colorProperty.set(new Color(
+			    colorProperty.get().getRed(),
+			    colorProperty.get().getGreen(),
+			    colorProperty.get().getBlue(),
+			    opacityNewValue.doubleValue()
+			));
+		});
 	}
 
 	/*
@@ -597,12 +877,19 @@ public class PreferencesMenuController implements Initializable {
 	    ResourceBundle resourceBundle
 	) {
 		/*
+		Initialize properties.
+		*/
+		initializeColorProperty();
+
+		/*
 		Initialize FXML components.
 		*/
 		initializeTargetScreenChoiceBox();
 		initializeEnabledCheckBox();
 		initializeGridLinesVisibleCheckBox();
-		initializeBaseColorChoiceBox();
+		initializeRedSlider();
+		initializeGreenSlider();
+		initializeBlueSlider();
 		initializeOpacitySlider();
 		initializeCursorTrackingFrequencySlider();
 		initializeCursorWindowWidthSlider();

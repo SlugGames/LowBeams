@@ -44,7 +44,7 @@ import javafx.stage.WindowEvent;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.8.0
+ * @version 0.9.0
  * @since 0.2.0
  */
 public class PreferencesMenuManager {
@@ -194,22 +194,8 @@ public class PreferencesMenuManager {
 			... COLOR ...
 			.............
 		*/
-		/*
-				.............................
-				... BASE COLOR CHOICE BOX ...
-				.............................
-		*/
-		overlayManager.getController().getBaseColorProperty().bind(
-		    controller.getBaseColorChoiceBox().valueProperty()
-		);
-
-		/*
-				......................
-				... OPACITY SLIDER ...
-				......................
-		*/
-		overlayManager.getController().getOpacityProperty().bind(
-		    controller.getOpacitySlider().valueProperty()
+		overlayManager.getController().getColorProperty().bind(
+		    controller.getColorProperty()
 		);
 
 		/*
