@@ -23,11 +23,10 @@
  */
 package com.sluggames.software.LowBeams;
 
-import com.sluggames.software.LowBeams.resources.FXML.Overlay.OverlayController;
+import com.sluggames.software.LowBeams.resources.FXML.OverlayView.OverlayViewController;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -45,46 +44,75 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 /**
- * This class manages a single overlay. In addition to encapsulating all related
- * components, it implements any corresponding application logic. It is
- * important to note that this class automatically creates the necessary
- * {@link javafx.stage.Stage} upon construction, so no further action is
- * required to begin using the overlay.
+ * This class manages the overlay view. Although it can be instantiated prior to
+ * launching the JavaFX platform, in order to use it, it must be initialized
+ * exactly once by calling the {@link #initialize()} method from the JavaFX
+ * application thread.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.8.0
+ * @version 0.10.0
  * @since 0.1.0
  */
-public class OverlayManager {
+public class OverlayViewManager {
 	/*
 		******************
 		*** PROPERTIES ***
 		******************
 	*/
 	/*
-			-----------
-			| EXPOSED |
-			-----------
-	*/
-	/*
-				\\\\\\\\\\\\\\\\\
-				\ TARGET SCREEN \
-				\\\\\\\\\\\\\\\\\
+			-----------------
+			| TARGET SCREEN |
+			-----------------
 	*/
 	private final SimpleObjectProperty<Screen> targetScreenProperty =
-	    new SimpleObjectProperty<>(Screen.getPrimary());
+	    new SimpleObjectProperty<>();
 
 	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
+				\\\\\\\\\\\\\\\\\\\\\\\\
+				\ TARGET SCREEN BOUNDS \
+				\\\\\\\\\\\\\\\\\\\\\\\\
+
+	Even though the user controls the target screen property, it's actually
+	the target screen's bounds which are used to fit the stage to the target
+	screen. Unfortunately, it's unclear from the JavaFX documentation
+	whether screen bounds can change, or screen objects are effectively
+	immutable. As a result, the screen bounds must be monitored directly for
+	changes.
 	*/
+	private final SimpleObjectProperty<Rectangle2D> targetScreenBoundsProperty =
+	    new SimpleObjectProperty<>();
+
+	/*
+				\\\\\\\\\\\\\\
+				\ INITIALIZE \
+				\\\\\\\\\\\\\\
+	*/
+	/**
+	 * The stage initialization method must be called prior to this one so
+	 * that the stage can be fitted to the default target screen bounds
+	 * value.
+	 *
+	 *
+	 * @throws IllegalStateException	Stage has not been initialized.
+	 */
 	private void initializeTargetScreenProperty() {
 		/*
+		Check if the stage has not been initialized.
+		*/
+		if (stage == null) {
+			/*
+			If it hasn't, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Stage has not been initialized."
+			);
+		}
+
+		/*
 		Add a change listener to the target screen property which
-		updates the internal target screen bounds property.
+		updates the target screen bounds property.
 		*/
 		targetScreenProperty.addListener((
 		    ObservableValue<? extends Screen> targetScreenObservableValue,
@@ -92,36 +120,110 @@ public class OverlayManager {
 		    Screen targetScreenNewValue
 		) -> {
 			/*
-			Validate the new value.
+			Check if the new value is null.
 			*/
 			if (targetScreenNewValue == null) {
-				throw new NullPointerException(
-				    "targetScreenNewValue == null"
+				/*
+				If so, set the target screen bounds property to
+				null.
+				*/
+				targetScreenBoundsProperty.set(null);
+			} else {
+				/*
+				Otherwise, update the target screen bounds
+				property according to the new target screen.
+				*/
+				targetScreenBoundsProperty.set(
+				    targetScreenNewValue.getBounds()
 				);
 			}
-
-			/*
-			Update the target screen bounds property.
-			*/
-			targetScreenBoundsProperty.set(
-			    targetScreenNewValue.getBounds()
-			);
 		});
+
+		/*
+		Add a change listener to the target screen bounds property which
+		fits the stage to the target screen any time the bounds change.
+		*/
+		targetScreenBoundsProperty.addListener((
+		    ObservableValue<? extends Rectangle2D> targetScreenBoundsObservableValue,
+		    Rectangle2D targetScreenBoundsOldValue,
+		    Rectangle2D targetScreenBoundsNewValue
+		) -> {
+			/*
+			Check if the new value is null.
+			*/
+			if (targetScreenBoundsNewValue == null) {
+				/*
+				If so, reset the stage back to the origin with
+				no area.
+				*/
+				stage.setX(0);
+				stage.setY(0);
+				stage.setWidth(0);
+				stage.setHeight(0);
+			} else {
+				/*
+				Otherwise, set the stage's position to match the
+				new bounds.
+				*/
+				stage.setX(
+				    targetScreenBoundsProperty.get().getMinX()
+				);
+				stage.setY(
+				    targetScreenBoundsProperty.get().getMinY()
+				);
+
+				/*
+				Set the stage's dimensions to match the new
+				bounds.
+				*/
+				stage.setWidth(
+				    targetScreenBoundsProperty.get().getWidth()
+				);
+				stage.setHeight(
+				    targetScreenBoundsProperty.get().getHeight()
+				);
+			}
+		});
+
+		/*
+		Set the default value of the target screen property to the
+		primary screen. Because both change listeners were added above,
+		this will propagate to the target screen bounds property and the
+		stage.
+		*/
+		targetScreenProperty.set(Screen.getPrimary());
 	}
 
 	/*
-					///////
-					/ GET /
-					///////
+				\\\\\\\
+				\ GET \
+				\\\\\\\
 	*/
+	/**
+	 * @return	target screen property
+	 *
+	 * @throws IllegalStateException	Not yet initialized.
+	 */
 	public ObjectProperty<Screen> getTargetScreenProperty() {
+		/*
+		Check if the instance has yet to be initialized.
+		*/
+		if (!initialized) {
+			/*
+			If it hasn't, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Not yet initialized."
+			);
+		}
+
 		return targetScreenProperty;
 	}
 
 	/*
-				\\\\\\\\\\\
-				\ ENABLED \
-				\\\\\\\\\\\
+			-----------
+			| ENABLED |
+			-----------
 	*/
 	public static final boolean DEFAULT_ENABLED = true;
 
@@ -129,9 +231,9 @@ public class OverlayManager {
 	    new SimpleBooleanProperty(DEFAULT_ENABLED);
 
 	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
+				\\\\\\\\\\\\\\
+				\ INITIALIZE \
+				\\\\\\\\\\\\\\
 	*/
 	private void initializeEnabledProperty() {
 		/*
@@ -155,60 +257,29 @@ public class OverlayManager {
 	}
 
 	/*
-					///////
-					/ GET /
-					///////
+				\\\\\\\
+				\ GET \
+				\\\\\\\
 	*/
+	/**
+	 * @return	enabled property
+	 *
+	 * @throws IllegalStateException	Not yet initialized.
+	 */
 	public BooleanProperty getEnabledProperty() {
-		return enabledProperty;
-	}
-
-	/*
-			------------
-			| INTERNAL |
-			------------
-	*/
-	/*
-				\\\\\\\\\\\\\\\\\\\\\\\\
-				\ TARGET SCREEN BOUNDS \
-				\\\\\\\\\\\\\\\\\\\\\\\\
-
-	Even though the user controls the exposed target screen property, it's
-	the target screen's bounds themselves which are used to fit the stage to
-	the target screen.
-	*/
-	private final SimpleObjectProperty<Rectangle2D> targetScreenBoundsProperty =
-	    new SimpleObjectProperty<>(Screen.getPrimary().getBounds());
-
-	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
-	*/
-	private void initializeTargetScreenBoundsProperty() {
 		/*
-		Add a change listener to the target screen bounds property which
-		fits the stage to the target screen any time the bounds change.
+		Check if the instance has yet to be initialized.
 		*/
-		targetScreenBoundsProperty.addListener((
-		    ObservableValue<? extends Rectangle2D> targetScreenBoundsObservableValue,
-		    Rectangle2D targetScreenBoundsOldValue,
-		    Rectangle2D targetScreenBoundsNewValue
-		) -> {
+		if (!initialized) {
 			/*
-			Validate the new value.
+			If it hasn't, throw an exception.
 			*/
-			if (targetScreenBoundsNewValue == null) {
-				throw new NullPointerException(
-					"targetScreenBoundsNewValue == null"
-				);
-			}
+			throw new IllegalStateException(
+			    "Not yet initialized."
+			);
+		}
 
-			/*
-			Fit the stage to the target screen's new bounds.
-			*/
-			fitStageToTargetScreenBounds();
-		});
+		return enabledProperty;
 	}
 
 
@@ -222,7 +293,7 @@ public class OverlayManager {
 			| STAGE |
 			---------
 	*/
-	private final Stage stage = new Stage(StageStyle.TRANSPARENT);
+	private Stage stage;
 
 	/*
 				\\\\\\\\\\\\\\
@@ -230,6 +301,11 @@ public class OverlayManager {
 				\\\\\\\\\\\\\\
 	*/
 	private void initializeStage() {
+		/*
+		Create the transparent stage.
+		*/
+		stage = new Stage(StageStyle.TRANSPARENT);
+
 		/*
 		Set a window event handler to ignore close requests on the
 		overlay stage. This prevents the user from directly closing
@@ -253,11 +329,6 @@ public class OverlayManager {
 		stage.getIcons().add(LowBeams.APPLICATION_LOGO_ICON_IMAGE);
 
 		/*
-		Fit the stage to the default target screen bounds.
-		*/
-		fitStageToTargetScreenBounds();
-
-		/*
 		Set the stage to always be in front. This setting doesn't always
 		work, depending on the platform and application permissions, so
 		the stage shoudld be repeatedly moved to the front as a backup.
@@ -273,7 +344,9 @@ public class OverlayManager {
 		see exit hints or other unexpected intrusions.
 		*/
 		stage.setFullScreenExitHint("");
-		stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+		stage.setFullScreenExitKeyCombination(
+		    KeyCombination.NO_MATCH
+		);
 	}
 
 	/*
@@ -281,32 +354,37 @@ public class OverlayManager {
 			| CONTROLLER |
 			--------------
 	*/
-	private final OverlayController controller = new OverlayController();
+	private final OverlayViewController controller =
+	    new OverlayViewController();
 
 	/*
 				\\\\\\\\\\\\\\
 				\ INITIALIZE \
 				\\\\\\\\\\\\\\
 	*/
-	private void initializeController() {
+	/**
+	 * @throws IOException		Failed to load controller FXML.
+	 */
+	private void initializeController()
+	    throws
+	    IOException
+	{
 		/*
 		Load the controller's FXML file.
 		*/
-		FXMLLoader overlayLoader =
-		    new FXMLLoader(OverlayController.FXML_FILE_URL);
+		FXMLLoader overlayLoader = new FXMLLoader(
+		    OverlayViewController.FXML_FILE_URL
+		);
 		overlayLoader.setRoot(new GridPane());
 		overlayLoader.setController(controller);
-
-		try {
-			overlayLoader.load();
-		} catch (IOException ex) {
-			Logger.getLogger(OverlayManager.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		overlayLoader.load();
 
 		/*
 		Create a transparent scene containing the root.
 		*/
-		Scene scene = new Scene(overlayLoader.getRoot());
+		Scene scene = new Scene(
+		    overlayLoader.getRoot()
+		);
 		scene.setFill(Color.TRANSPARENT);
 
 		/*
@@ -345,33 +423,103 @@ public class OverlayManager {
 				\ GET \
 				\\\\\\\
 	*/
-	public OverlayController getController() {
+	/**
+	 * @return	controller
+	 *
+	 * @throws IllegalStateException	Not yet initialized.
+	 */
+	public OverlayViewController getController() {
+		/*
+		Check if the instance has yet to be initialized.
+		*/
+		if (!initialized) {
+			/*
+			If it hasn't, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Not yet initialized."
+			);
+		}
+
 		return controller;
 	}
 
 
 	/*
-		********************
-		*** CONSTRUCTION ***
-		********************
+		**********************
+		*** INITIALIZATION ***
+		**********************
 	*/
-	public OverlayManager() {
+	private boolean initialized;
+
+	/*
+			------
+			| IS |
+			------
+	*/
+	public boolean isInitialized() {
+		return initialized;
+	}
+
+	/*
+			--------------
+			| INITIALIZE |
+			--------------
+	*/
+	/**
+	 * This method must be called from the JavaFX application thread, to
+	 * allow access to JavaFX resources.
+	 *
+	 *
+	 * @throws IllegalStateException	Already initialized, or not on
+	 *					JavaFX application thread.
+	 *
+	 * @throws IOException		Failed to load controller FXML.
+	 */
+	public void initialize()
+	    throws
+	    IOException
+	{
 		/*
-		Initialize exposed properties.
+		Check if the instance has already been initialized.
 		*/
-		initializeTargetScreenProperty();
-		initializeEnabledProperty();
+		if (initialized) {
+			/*
+			If so, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Already initialized."
+			);
+		}
 
 		/*
-		Initialize internal properties.
+		Check if the caller is running on a thread other than the JavaFX
+		application thread.
 		*/
-		initializeTargetScreenBoundsProperty();
+		if (!Platform.isFxApplicationThread()) {
+			/*
+			If so, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Not on JavaFX application thread."
+			);
+		}
 
 		/*
-		Initialize components.
+		Initialize components. This is done before initializing
+		properties because the target screen property depends on the
+		stage having been initialized.
 		*/
 		initializeStage();
 		initializeController();
+
+		/*
+		Initialize properties. This is done after initializing
+		components because the target screen property depends on the
+		stage having been initialized.
+		*/
+		initializeTargetScreenProperty();
+		initializeEnabledProperty();
 
 		/*
 		Start a new animation timer, which fires once per JavaFX pulse.
@@ -381,14 +529,7 @@ public class OverlayManager {
 			public void handle(long ignoredTime) {
 				/*
 				Check if the target screen's bounds have
-				changed. Unfortunately, it is not clear from the
-				JavaFX documentation whether or not the bounds
-				object of a screen can change. It seems likely
-				that any such changes to a screen would manifest
-				themselves as entirely new screen objects, but
-				the documentation does not provide any
-				definitive answers. Therefore, it is best to be
-				safe and check for updates.
+				changed.
 				*/
 				if (
 				    targetScreenProperty.get().getBounds() !=
@@ -397,7 +538,8 @@ public class OverlayManager {
 					/*
 					If so, update the target screen bounds
 					property to the new bounds, which should
-					refit the stage to the target screen.
+					automatically propagate the new bounds
+					to the stage.
 					*/
 					targetScreenBoundsProperty.set(
 					    targetScreenProperty.get().getBounds()
@@ -425,25 +567,10 @@ public class OverlayManager {
 				}
 			}
 		}.start();
-	}
-
-
-	/*
-		*****************************************
-		*** FIT STAGE TO TARGET SCREEN BOUNDS ***
-		*****************************************
-	*/
-	private void fitStageToTargetScreenBounds() {
-		/*
-		Set the stage's position to match the target screen bounds.
-		*/
-		stage.setX(targetScreenBoundsProperty.get().getMinX());
-		stage.setY(targetScreenBoundsProperty.get().getMinY());
 
 		/*
-		Set the stage's dimensions to match the target screen bounds.
+		Set to initialized.
 		*/
-		stage.setWidth(targetScreenBoundsProperty.get().getWidth());
-		stage.setHeight(targetScreenBoundsProperty.get().getHeight());
+		initialized = true;
 	}
 }

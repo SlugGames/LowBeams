@@ -23,101 +23,86 @@
  */
 package com.sluggames.software.LowBeams;
 
-import com.sluggames.software.LowBeams.resources.FXML.PreferencesMenu.PreferencesMenuController;
+import com.sluggames.software.LowBeams.resources.FXML.PreferencesView.PreferencesViewController;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 /**
- * This class manages the applications main preferences menu. In addition to
- * encapsulating all related components, it implements any corresponding
- * application logic. It is important to note that this class automatically
- * creates the necessary {@link javafx.stage.Stage} upon construction, so no
- * further action is required to begin using the preferences menu.
+ * This class manages the preferences view. Although it can be instantiated
+ * prior to launching the JavaFX platform, in order to use it, it must be
+ * initialized exactly once by calling the {@link #initialize()} method from the
+ * JavaFX application thread.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.9.0
+ * @version 0.10.0
  * @since 0.2.0
  */
-public class PreferencesMenuManager {
+public class PreferencesViewManager {
 	/*
 		******************
 		*** COMPONENTS ***
 		******************
 	*/
 	/*
-			\\\\\\\\\
-			\ STAGE \
-			\\\\\\\\\
+			---------
+			| STAGE |
+			---------
 	*/
-	private final Stage stage = new Stage();
+	private Stage stage;
 
 	/*
-				//////////////
-				/ INITIALIZE /
-				//////////////
+				\\\\\\\\\\\\\\
+				\ INITIALIZE \
+				\\\\\\\\\\\\\\
 	*/
 	private void initializeStage() {
 		/*
-		Set a window event handler to exit the application when the
-		preferences menu stage receives a close request.
+		Create the default stage.
 		*/
-		stage.setOnCloseRequest((
-		    WindowEvent windowEvent
-		) -> {
-			/*
-			Exit the JavaFX platform.
-			*/
-			Platform.exit();
-		});
+		stage = new Stage();
 
 		/*
 		Set the stage title and icon to match the application.
 		*/
 		stage.setTitle(LowBeams.APPLICATION_TITLE);
 		stage.getIcons().add(LowBeams.APPLICATION_LOGO_ICON_IMAGE);
-
-		/*
-		Show the stage.
-		*/
-		stage.show();
 	}
 
 	/*
-			\\\\\\\\\\\\\\
-			\ CONTROLLER \
-			\\\\\\\\\\\\\\
+			--------------
+			| CONTROLLER |
+			--------------
 	*/
-	private final PreferencesMenuController controller =
-	    new PreferencesMenuController();
+	private final PreferencesViewController controller =
+	    new PreferencesViewController();
 
 	/*
-				//////////////
-				/ INITIALIZE /
-				//////////////
+				\\\\\\\\\\\\\\
+				\ INITIALIZE \
+				\\\\\\\\\\\\\\
 	*/
-	private void initializeController() {
+	/**
+	 * @throws IOException		Failed to load controller FXML.
+	 */
+	private void initializeController()
+	    throws
+	    IOException
+	{
 		/*
 		Load the controller's FXML file.
 		*/
-		FXMLLoader preferencesMenuLoader =
-		    new FXMLLoader(PreferencesMenuController.FXML_FILE_URL);
+		FXMLLoader preferencesMenuLoader = new FXMLLoader(
+		    PreferencesViewController.FXML_FILE_URL
+		);
 		preferencesMenuLoader.setRoot(new ScrollPane());
 		preferencesMenuLoader.setController(controller);
-
-		try {
-			preferencesMenuLoader.load();
-		} catch (IOException ex) {
-			Logger.getLogger(PreferencesMenuManager.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		preferencesMenuLoader.load();
 
 		/*
 		Set the stage to display a scene with the loaded FXML content.
@@ -129,16 +114,74 @@ public class PreferencesMenuManager {
 
 
 	/*
-		********************
-		*** CONSTRUCTION ***
-		********************
+		**********************
+		*** INITIALIZATION ***
+		**********************
 	*/
-	public PreferencesMenuManager() {
+	private boolean initialized;
+
+	/*
+			------
+			| IS |
+			------
+	*/
+	public boolean isInitialized() {
+		return initialized;
+	}
+	/*
+			--------------
+			| INITIALIZE |
+			--------------
+	*/
+	/**
+	 * This method must be called from the JavaFX application thread, to
+	 * allow access to JavaFX resources.
+	 *
+	 *
+	 * @throws IllegalStateException	Already initialized, or not on
+	 *					JavaFX application thread.
+	 *
+	 * @throws IOException		Failed to load controller FXML.
+	 */
+	public void initialize()
+	    throws
+	    IOException
+	{
+		/*
+		Check if the instance has already been initialized.
+		*/
+		if (initialized) {
+			/*
+			If so, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Already initialized."
+			);
+		}
+
+		/*
+		Check if the caller is running on a thread other than the JavaFX
+		application thread.
+		*/
+		if (!Platform.isFxApplicationThread()) {
+			/*
+			If so, throw an exception.
+			*/
+			throw new IllegalStateException(
+			    "Not on JavaFX application thread."
+			);
+		}
+
 		/*
 		Initialize components.
 		*/
 		initializeStage();
 		initializeController();
+
+		/*
+		Set to initialized.
+		*/
+		initialized = true;
 	}
 
 
@@ -147,13 +190,15 @@ public class PreferencesMenuManager {
 		*** BIND OVERLAY MANAGER ***
 		****************************
 	*/
-	public void bindOverlayManager(OverlayManager overlayManager) {
+	public void bindOverlayViewManager(
+	    OverlayViewManager overlayViewManager
+	) {
 		/*
 		Validate arguments.
 		*/
-		if (overlayManager == null) {
+		if (overlayViewManager == null) {
 			throw new NullPointerException(
-			    "overlayManager == null"
+			    "overlayViewManager == null"
 			);
 		}
 
@@ -167,7 +212,7 @@ public class PreferencesMenuManager {
 			... TARGET SCREEN CHOICE BOX ...
 			................................
 		*/
-		overlayManager.getTargetScreenProperty().bind(
+		overlayViewManager.getTargetScreenProperty().bind(
 		    controller.getTargetScreenChoiceBox().valueProperty()
 		);
 
@@ -176,7 +221,7 @@ public class PreferencesMenuManager {
 			... ENABLED CHECK BOX ...
 			.........................
 		*/
-		overlayManager.getEnabledProperty().bind(
+		overlayViewManager.getEnabledProperty().bind(
 		    controller.getEnabledCheckBox().selectedProperty()
 		);
 
@@ -185,7 +230,7 @@ public class PreferencesMenuManager {
 			... GRID LINES VISIBLE CHECK BOX ...
 			....................................
 		*/
-		overlayManager.getController().getGridLinesVisibleProperty().bind(
+		overlayViewManager.getController().getGridLinesVisibleProperty().bind(
 		    controller.getGridLinesVisibleCheckBox().selectedProperty()
 		);
 
@@ -194,7 +239,7 @@ public class PreferencesMenuManager {
 			... COLOR ...
 			.............
 		*/
-		overlayManager.getController().getColorProperty().bind(
+		overlayViewManager.getController().getColorProperty().bind(
 		    controller.getColorProperty()
 		);
 
@@ -208,7 +253,7 @@ public class PreferencesMenuManager {
 				... TRACKING FREQUENCY SLIDER ...
 				.................................
 		*/
-		overlayManager.getController().getCursorTrackingFrequencyProperty().bind(
+		overlayViewManager.getController().getCursorTrackingFrequencyProperty().bind(
 		    controller.getCursorTrackingFrequencySlider().valueProperty()
 		);
 
@@ -222,7 +267,7 @@ public class PreferencesMenuManager {
 					... WIDTH ...
 					.............
 		*/
-		overlayManager.getController().getCursorWindowWidthProperty().bind(
+		overlayViewManager.getController().getCursorWindowWidthProperty().bind(
 		    controller.getCursorWindowWidthSlider().valueProperty()
 		);
 
@@ -231,8 +276,22 @@ public class PreferencesMenuManager {
 					... HEIGHT ...
 					..............
 		*/
-		overlayManager.getController().getCursorWindowHeightProperty().bind(
+		overlayViewManager.getController().getCursorWindowHeightProperty().bind(
 		    controller.getCursorWindowHeightSlider().valueProperty()
 		);
+	}
+
+
+	/*
+		***************
+		*** DISPLAY ***
+		***************
+	*/
+	public void display() {
+		/*
+		Show the stage in front.
+		*/
+		stage.show();
+		stage.toFront();
 	}
 }

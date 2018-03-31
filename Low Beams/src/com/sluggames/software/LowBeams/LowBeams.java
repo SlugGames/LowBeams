@@ -23,6 +23,8 @@
  */
 package com.sluggames.software.LowBeams;
 
+import java.awt.AWTException;
+import java.io.IOException;
 import java.net.URL;
 import javafx.application.Application;
 import javafx.scene.image.Image;
@@ -37,7 +39,7 @@ import javafx.stage.Stage;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.9.0
+ * @version 0.10.0
  * @since 0.0.0
  */
 public class LowBeams extends Application {
@@ -112,7 +114,7 @@ public class LowBeams extends Application {
 	Upon incrementing the minor version number, the revision version number
 	should be reset to 0.
 	*/
-	public static final int MINOR_VERSION_NUMBER = 9;
+	public static final int MINOR_VERSION_NUMBER = 10;
 
 	/*
 				\\\\\\\\\\\\\\\\\\\
@@ -139,6 +141,45 @@ public class LowBeams extends Application {
 	    MINOR_VERSION_NUMBER + "." +
 	    REVISION_VERSION_NUMBER;
 
+	/*
+			-------------
+			| COPYRIGHT |
+			-------------
+	*/
+	public static final String COPYRIGHT =
+	    "Copyright (c) 2018 Slug Games";
+
+	/*
+			-----------
+			| LICENSE |
+			-----------
+	*/
+	public static final String LICENSE =
+	    "MIT License\n" +
+	    "\n" +
+	    "Copyright (c) 2018 Slug Games\n" +
+	    "\n" +
+	    "Permission is hereby granted, free of charge, to any person " +
+	    "obtaining a copy of this software and associated documentation " +
+	    "files (the \"Software\"), to deal in the Software without " +
+	    "restriction, including without limitation the rights to use, " +
+	    "copy, modify, merge, publish, distribute, sublicense, and/or " +
+	    "sell copies of the Software, and to permit persons to whom the " +
+	    "Software is furnished to do so, subject to the following " +
+	    "conditions:\n" +
+	    "\n" +
+	    "The above copyright notice and this permission notice shall be " +
+	    "included in all copies or substantial portions of the " +
+	    "Software.\n" +
+	    "\n" +
+	    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY " +
+	    "KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE " +
+	    "WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE " +
+	    "AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT " +
+	    "HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, " +
+	    "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING " +
+	    "FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR " +
+	    "OTHER DEALINGS IN THE SOFTWARE.";
 
 	/*
 			--------
@@ -164,15 +205,75 @@ public class LowBeams extends Application {
 					///////
 	*/
 	public static final URL APPLICATION_LOGO_ICON_URL =
-	    LowBeams.class.getResource("resources/images/Logo Icon.png");
+	    LowBeams.class.getResource(
+	    "resources/images/Logo Icon.png"
+	);
 
 	/*
 					/////////
 					/ IMAGE /
 					/////////
 	*/
-	public static final Image APPLICATION_LOGO_ICON_IMAGE =
-	    new Image(APPLICATION_LOGO_ICON_URL.toString());
+	public static final Image APPLICATION_LOGO_ICON_IMAGE = new Image(
+	    APPLICATION_LOGO_ICON_URL.toString()
+	);
+
+
+	/*
+		**************
+		*** JAVAFX ***
+		**************
+
+	In general, JavaFX component initialization should be deferred to the
+	application start method, as it is executed on the JavaFX application
+	thread after the JavaFX platform has been launched.
+	*/
+	/*
+			----------------------------
+			| PREFERENCES VIEW MANAGER |
+			----------------------------
+	*/
+	private final PreferencesViewManager preferencesViewManager =
+	    new PreferencesViewManager();
+
+	/*
+			----------------------------------------
+			| APPLICATION INFORMATION VIEW MANAGER |
+			----------------------------------------
+	*/
+	private final ApplicationInformationViewManager applicationInformationViewManager =
+	    new ApplicationInformationViewManager();
+
+	/*
+			------------------------
+			| OVERLAY VIEW MANAGER |
+			------------------------
+	*/
+	private final OverlayViewManager overlayViewManager =
+	    new OverlayViewManager();
+
+
+	/*
+		***********
+		*** AWT ***
+		***********
+
+	In general, AWT components should be initialized in the init method,
+	prior to starting the JavaFX application thread. According to various
+	scattered posts and bug reports, there exists the potential for
+	incompabilities between AWT and JavaFX when AWT is not initialized
+	first.
+	*/
+	/*
+			----------------------------
+			| SYSTEM TRAY MENU MANAGER |
+			----------------------------
+	*/
+	private final SystemTrayMenuManager systemTrayMenuManager =
+	    new SystemTrayMenuManager(
+	    preferencesViewManager,
+	    applicationInformationViewManager
+	);
 
 
 	/*
@@ -185,27 +286,10 @@ public class LowBeams extends Application {
 			| MAIN |
 			--------
 
-	This method is called when the application is first launched, but before
-	the JavaFX platform is initialized. Although most application
-	initialization should be deferred to the JavaFX start method below,
-	there are valid use cases which require the main method, namely:
-
-		1)	JavaFX still does not implement all of the features of
-			AWT or Swing, and occasionally, features from multiple
-			platforms may be required. A good example is system tray
-			integration, which is present in AWT but not yet in
-			JavaFX. Due to an older bug, AWT needed to be
-			initialized prior to JavaFX. It appears that this is no
-			longer the case, but it is still advisable to do so just
-			in case.
-
-		2)	Although it has been years since this was a common
-			problem, when JavaFX was new, there were cases when the
-			JavaFX platform needed to be explicitly launched from
-			the main method. This was common when running
-			development builds from older IDE versions which lacked
-			true JavaFX support. Therefore, it's still good practice
-			to provide the main method just in case.
+	This method is the initial entry point prior to launching the JavaFX
+	platform. Application initialization should generally be deferred to the
+	init and start methods below, but main is still required to launch in
+	some cases.
 	*/
 	public static void main(String[] args) {
 		/*
@@ -215,34 +299,74 @@ public class LowBeams extends Application {
 	}
 
 	/*
+			--------
+			| INIT |
+			--------
+
+	This method is executed by the JavaFX platform prior to starting the
+	JavaFX application thread. It provides the opportunity to initialize
+	components which require running on the main thread, such as AWT
+	components.
+	*/
+	@Override
+	public void init()
+	    throws
+	    AWTException,
+	    IOException
+	{
+		/*
+		Initialize AWT components.
+		*/
+		systemTrayMenuManager.initialize();
+	}
+
+	/*
 			---------
 			| START |
 			---------
 
-	This method is called after the initialization of the JavaFX platform,
-	and is executed by the JavaFX application thread. It is where most
-	application initialization should generally be performed, although the
-	main method may be necessary for the cases described above.
+	This method is called after starting the JavaFX platform, and is
+	executed by the JavaFX application thread. Generally, this is where most
+	initialization of JavaFX components should be done.
 	*/
 	@Override
-	public void start(Stage ignoredStage) {
-		/*
-		Create a single overlay manager, which will handle the
-		initialization and operation of a single overlay on the primary
-		screen.
-		*/
-		OverlayManager overlayManager = new OverlayManager();
+	public void start(
+	    Stage ignoredStage
+	) {
+		try {
+			/*
+			Initialize JavaFX components.
+			*/
+			preferencesViewManager.initialize();
+			applicationInformationViewManager.initialize();
+			overlayViewManager.initialize();
 
-		/*
-		Create the preferences menu manager.
-		*/
-		PreferencesMenuManager preferencesMenuManager =
-		    new PreferencesMenuManager();
+			/*
+			Bind the overlay view manager to the preferences view
+			manager so that the user can adjust the overlay's
+			properties.
+			*/
+			preferencesViewManager.bindOverlayViewManager(
+			    overlayViewManager
+			);
+		} catch (IOException exception) {
+			/*
+			Print a descriptive error message. Eventually, the
+			application should append to a log of some sort to aid
+			in debugging outside of the IDE. For now, a simple error
+			message on the console is enough.
+			*/
+			System.err.println(
+			    "Failed to load controller FXML:\n" +
+			    exception.getMessage()
+			);
 
-		/*
-		Bind the overlay manager to the preferences menu manager so that
-		the user can adjust the overlay's properties.
-		*/
-		preferencesMenuManager.bindOverlayManager(overlayManager);
+			/*
+			Schedule a graceful application exit with the system
+			tray menu manager, as it is responsible for properly
+			terminating both the JavaFX and AWT frameworks.
+			*/
+			systemTrayMenuManager.scheduleApplicationExit();
+		}
 	}
 }

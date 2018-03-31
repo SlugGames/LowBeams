@@ -21,21 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.sluggames.software.LowBeams.resources.FXML.PreferencesMenu;
+package com.sluggames.software.LowBeams.resources.FXML.PreferencesView;
 
-import com.sluggames.software.LowBeams.OverlayManager;
-import com.sluggames.software.LowBeams.resources.FXML.Overlay.OverlayController;
+import com.sluggames.software.LowBeams.OverlayViewManager;
+import com.sluggames.software.LowBeams.resources.FXML.OverlayView.OverlayViewController;
 import com.sluggames.software.LowBeams.utility.DoubleToHertzFrequencyLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPixelLabelConverter;
 import com.sluggames.software.LowBeams.utility.ScreenToShortLabelConverter;
 import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -44,7 +42,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 
 /**
- * This class is the controller for the preferences menu FXML. It primarily
+ * This class is the FXML controller for the preferences view. It primarily
  * exposes the relevant controls, as there is not much internal logic required.
  * Currently, the only notable exception are the color controls. There are some
  * incompatibilities between the overlay functionality and the standard JavaFX
@@ -56,32 +54,27 @@ import javafx.stage.Screen;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.9.0
+ * @version 0.10.0
  * @since 0.2.0
  */
-public class PreferencesMenuController implements Initializable {
+public class PreferencesViewController {
 	/*
 		******************
 		*** PROPERTIES ***
 		******************
 	*/
 	/*
-			-----------
-			| EXPOSED |
-			-----------
-	*/
-	/*
-				\\\\\\\\\
-				\ COLOR \
-				\\\\\\\\\
+			---------
+			| COLOR |
+			---------
 	*/
 	private final SimpleObjectProperty<Color> colorProperty =
-	    new SimpleObjectProperty<>(OverlayController.DEFAULT_COLOR);
+	    new SimpleObjectProperty<>(OverlayViewController.DEFAULT_COLOR);
 
 	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
+				\\\\\\\\\\\\\\
+				\ INITIALIZE \
+				\\\\\\\\\\\\\\
 	*/
 	private void initializeColorProperty() {
 		/*
@@ -91,9 +84,9 @@ public class PreferencesMenuController implements Initializable {
 	}
 
 	/*
-					///////
-					/ GET /
-					///////
+				\\\\\\\
+				\ GET \
+				\\\\\\\
 	*/
 	public ObjectProperty<Color> getColorProperty() {
 		return colorProperty;
@@ -111,8 +104,8 @@ public class PreferencesMenuController implements Initializable {
 			------------
 	*/
 	public static final URL FXML_FILE_URL =
-	    PreferencesMenuController.class.getResource(
-	    "PreferencesMenu.fxml"
+	    PreferencesViewController.class.getResource(
+	    "PreferencesView.fxml"
 	);
 
 	/*
@@ -195,8 +188,7 @@ public class PreferencesMenuController implements Initializable {
 		Set the selected value according to the default in the overlay
 		manager.
 		*/
-		enabledCheckBox.setSelected(
-		    OverlayManager.DEFAULT_ENABLED
+		enabledCheckBox.setSelected(OverlayViewManager.DEFAULT_ENABLED
 		);
 	}
 
@@ -227,8 +219,7 @@ public class PreferencesMenuController implements Initializable {
 		Set the selected value according to the default in the overlay
 		controller.
 		*/
-		gridLinesVisibleCheckBox.setSelected(
-		    OverlayController.DEFAULT_GRID_LINES_VISIBLE
+		gridLinesVisibleCheckBox.setSelected(OverlayViewController.DEFAULT_GRID_LINES_VISIBLE
 		);
 	}
 
@@ -292,8 +283,7 @@ public class PreferencesMenuController implements Initializable {
 		/*
 		Set the slider's value to match the default.
 		*/
-		redSlider.setValue(
-		    OverlayController.DEFAULT_COLOR.getRed()
+		redSlider.setValue(OverlayViewController.DEFAULT_COLOR.getRed()
 		);
 
 		/*
@@ -380,8 +370,7 @@ public class PreferencesMenuController implements Initializable {
 		/*
 		Set the slider's value to match the default.
 		*/
-		greenSlider.setValue(
-		    OverlayController.DEFAULT_COLOR.getGreen()
+		greenSlider.setValue(OverlayViewController.DEFAULT_COLOR.getGreen()
 		);
 
 		/*
@@ -468,8 +457,7 @@ public class PreferencesMenuController implements Initializable {
 		/*
 		Set the slider's value to match the default.
 		*/
-		blueSlider.setValue(
-		    OverlayController.DEFAULT_COLOR.getBlue()
+		blueSlider.setValue(OverlayViewController.DEFAULT_COLOR.getBlue()
 		);
 
 		/*
@@ -551,18 +539,15 @@ public class PreferencesMenuController implements Initializable {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		opacitySlider.setMin(
-		    OverlayController.MINIMUM_OPACITY
+		opacitySlider.setMin(OverlayViewController.MINIMUM_OPACITY
 		);
-		opacitySlider.setMax(
-		    OverlayController.MAXIMUM_OPACITY
+		opacitySlider.setMax(OverlayViewController.MAXIMUM_OPACITY
 		);
 
 		/*
 		Set the slider's value to match the default.
 		*/
-		opacitySlider.setValue(
-		    OverlayController.DEFAULT_OPACITY
+		opacitySlider.setValue(OverlayViewController.DEFAULT_OPACITY
 		);
 
 		/*
@@ -656,18 +641,15 @@ public class PreferencesMenuController implements Initializable {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		cursorTrackingFrequencySlider.setMin(
-		    OverlayController.MINIMUM_CURSOR_TRACKING_FREQUENCY
+		cursorTrackingFrequencySlider.setMin(OverlayViewController.MINIMUM_CURSOR_TRACKING_FREQUENCY
 		);
-		cursorTrackingFrequencySlider.setMax(
-		    OverlayController.MAXIMUM_CURSOR_TRACKING_FREQUENCY
+		cursorTrackingFrequencySlider.setMax(OverlayViewController.MAXIMUM_CURSOR_TRACKING_FREQUENCY
 		);
 
 		/*
 		Set the slider's value to match the default.
 		*/
-		cursorTrackingFrequencySlider.setValue(
-		    OverlayController.DEFAULT_CURSOR_TRACKING_FREQUENCY
+		cursorTrackingFrequencySlider.setValue(OverlayViewController.DEFAULT_CURSOR_TRACKING_FREQUENCY
 		);
 
 		/*
@@ -741,18 +723,15 @@ public class PreferencesMenuController implements Initializable {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		cursorWindowWidthSlider.setMin(
-		    OverlayController.MINIMUM_CURSOR_WINDOW_WIDTH
+		cursorWindowWidthSlider.setMin(OverlayViewController.MINIMUM_CURSOR_WINDOW_WIDTH
 		);
-		cursorWindowWidthSlider.setMax(
-		    OverlayController.MAXIMUM_CURSOR_WINDOW_WIDTH
+		cursorWindowWidthSlider.setMax(OverlayViewController.MAXIMUM_CURSOR_WINDOW_WIDTH
 		);
 
 		/*
 		Set the slider's value to match the default.
 		*/
-		cursorWindowWidthSlider.setValue(
-		    OverlayController.DEFAULT_CURSOR_WINDOW_WIDTH
+		cursorWindowWidthSlider.setValue(OverlayViewController.DEFAULT_CURSOR_WINDOW_WIDTH
 		);
 
 		/*
@@ -822,18 +801,15 @@ public class PreferencesMenuController implements Initializable {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		cursorWindowHeightSlider.setMin(
-		    OverlayController.MINIMUM_CURSOR_WINDOW_HEIGHT
+		cursorWindowHeightSlider.setMin(OverlayViewController.MINIMUM_CURSOR_WINDOW_HEIGHT
 		);
-		cursorWindowHeightSlider.setMax(
-		    OverlayController.MAXIMUM_CURSOR_WINDOW_HEIGHT
+		cursorWindowHeightSlider.setMax(OverlayViewController.MAXIMUM_CURSOR_WINDOW_HEIGHT
 		);
 
 		/*
 		Set the slider's value to match the default.
 		*/
-		cursorWindowHeightSlider.setValue(
-		    OverlayController.DEFAULT_CURSOR_WINDOW_HEIGHT
+		cursorWindowHeightSlider.setValue(OverlayViewController.DEFAULT_CURSOR_WINDOW_HEIGHT
 		);
 
 		/*
@@ -871,11 +847,8 @@ public class PreferencesMenuController implements Initializable {
 		*** INITIALIZE ***
 		******************
 	*/
-	@Override
-	public void initialize(
-	    URL url,
-	    ResourceBundle resourceBundle
-	) {
+	@FXML
+	public void initialize() {
 		/*
 		Initialize properties.
 		*/

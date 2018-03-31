@@ -21,13 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.sluggames.software.LowBeams.resources.FXML.Overlay;
+package com.sluggames.software.LowBeams.resources.FXML.OverlayView;
 
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -36,38 +35,32 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 /**
- * This class is the controller for the overlay FXML. In addition to exposing
- * properties which are necessary for integration with the main application
- * logic, it also implements the cursor tracking logic internally.
+ * This class is the FXML controller for the overlay view. In addition to
+ * exposing properties which are necessary for integration with the main
+ * application logic, it also implements the cursor tracking logic internally.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.9.0
+ * @version 0.10.0
  * @since 0.1.0
  */
-public class OverlayController implements Initializable {
+public class OverlayViewController {
 	/*
 		******************
 		*** PROPERTIES ***
 		******************
 	*/
 	/*
-			-----------
-			| EXPOSED |
-			-----------
-	*/
-	/*
-				\\\\\\\\\\\\\\\\\\\\\\
-				\ GRID LINES VISIBLE \
-				\\\\\\\\\\\\\\\\\\\\\\
+			----------------------
+			| GRID LINES VISIBLE |
+			----------------------
 
 	This property is a bit unique in that it is already built into the grid
 	pane. As there is no need to create a separate property, any
@@ -76,18 +69,18 @@ public class OverlayController implements Initializable {
 	public static final boolean DEFAULT_GRID_LINES_VISIBLE = false;
 
 	/*
-					///////
-					/ GET /
-					///////
+				\\\\\\\
+				\ GET \
+				\\\\\\\
 	*/
 	public BooleanProperty getGridLinesVisibleProperty() {
 		return gridPane.gridLinesVisibleProperty();
 	}
 
 	/*
-				\\\\\\\\\
-				\ COLOR \
-				\\\\\\\\\
+			---------
+			| COLOR |
+			---------
 	*/
 	public static final Color DEFAULT_BASE_COLOR = Color.BLACK;
 
@@ -105,9 +98,9 @@ public class OverlayController implements Initializable {
 	    new SimpleObjectProperty<>(DEFAULT_COLOR);
 
 	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
+				\\\\\\\\\\\\\\
+				\ INITIALIZE \
+				\\\\\\\\\\\\\\
 	*/
 	private void initializeColorProperty() {
 		/*
@@ -145,23 +138,23 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-					///////
-					/ GET /
-					///////
+				\\\\\\\
+				\ GET \
+				\\\\\\\
 	*/
 	public ObjectProperty<Color> getColorProperty() {
 		return colorProperty;
 	}
 
 	/*
-				\\\\\\\\\\\\\\\\\
-				\ CURSOR WINDOW \
-				\\\\\\\\\\\\\\\\\
+			-----------------
+			| CURSOR WINDOW |
+			-----------------
 	*/
 	/*
-					//////////////////////
-					/ TRACKING FREQUENCY /
-					//////////////////////
+				\\\\\\\\\\\\\\\\\\\\\\
+				\ TRACKING FREQUENCY \
+				\\\\\\\\\\\\\\\\\\\\\\
 	*/
 	public static final double MINIMUM_CURSOR_TRACKING_FREQUENCY = 15;
 	public static final double MAXIMUM_CURSOR_TRACKING_FREQUENCY = 60;
@@ -171,9 +164,9 @@ public class OverlayController implements Initializable {
 	    new SimpleDoubleProperty(DEFAULT_CURSOR_TRACKING_FREQUENCY);
 
 	/*
-						\\\\\\\\\\\\\\
-						\ INITIALIZE \
-						\\\\\\\\\\\\\\
+					//////////////
+					/ INITIALIZE /
+					//////////////
 	*/
 	private void initializeCursorTrackingFrequencyProperty() {
 		/*
@@ -299,23 +292,23 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+					///////
+					/ GET /
+					///////
 	*/
 	public DoubleProperty getCursorTrackingFrequencyProperty() {
 		return cursorTrackingFrequencyProperty;
 	}
 
 	/*
-					//////////////
-					/ DIMENSIONS /
-					//////////////
+				\\\\\\\\\\\\\\
+				\ DIMENSIONS \
+				\\\\\\\\\\\\\\
 	*/
 	/*
-						\\\\\\\\\
-						\ WIDTH \
-						\\\\\\\\\
+					/////////
+					/ WIDTH /
+					/////////
 	*/
 	public static final double MINIMUM_CURSOR_WINDOW_WIDTH = 16;
 	public static final double MAXIMUM_CURSOR_WINDOW_WIDTH = 128;
@@ -325,9 +318,9 @@ public class OverlayController implements Initializable {
 	    new SimpleDoubleProperty(DEFAULT_CURSOR_WINDOW_WIDTH);
 
 	/*
-							//////////////
-							/ INITIALIZE /
-							//////////////
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
 	*/
 	private void initializeCursorWindowWidthProperty() {
 		/*
@@ -365,18 +358,18 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-							///////
-							/ GET /
-							///////
+						\\\\\\\
+						\ GET \
+						\\\\\\\
 	*/
 	public DoubleProperty getCursorWindowWidthProperty() {
 		return cursorWindowWidthProperty;
 	}
 
 	/*
-						\\\\\\\\\\
-						\ HEIGHT \
-						\\\\\\\\\\
+					//////////
+					/ HEIGHT /
+					//////////
 	*/
 	public static final double MINIMUM_CURSOR_WINDOW_HEIGHT =
 	    MINIMUM_CURSOR_WINDOW_WIDTH;
@@ -389,9 +382,9 @@ public class OverlayController implements Initializable {
 	    new SimpleDoubleProperty(DEFAULT_CURSOR_WINDOW_HEIGHT);
 
 	/*
-							//////////////
-							/ INITIALIZE /
-							//////////////
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
 	*/
 	private void initializeCursorWindowHeightProperty() {
 		/*
@@ -429,9 +422,9 @@ public class OverlayController implements Initializable {
 	}
 
 	/*
-							///////
-							/ GET /
-							///////
+						\\\\\\\
+						\ GET \
+						\\\\\\\
 	*/
 	public DoubleProperty getCursorWindowHeightProperty() {
 		return cursorWindowHeightProperty;
@@ -449,8 +442,8 @@ public class OverlayController implements Initializable {
 			------------
 	*/
 	public static final URL FXML_FILE_URL =
-	    OverlayController.class.getResource(
-	    "Overlay.fxml"
+	    OverlayViewController.class.getResource(
+	    "OverlayView.fxml"
 	);
 
 	/*
@@ -711,8 +704,8 @@ public class OverlayController implements Initializable {
 		*** INITIALIZE ***
 		******************
 	*/
-	@Override
-	public void initialize(URL url, ResourceBundle resourceBundle) {
+	@FXML
+	public void initialize() {
 		/*
 		Initialize properties.
 		*/
