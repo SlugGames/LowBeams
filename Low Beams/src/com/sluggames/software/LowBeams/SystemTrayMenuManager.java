@@ -26,11 +26,14 @@ package com.sluggames.software.LowBeams;
 import static com.sluggames.software.LowBeams.LowBeams.APPLICATION_LOGO_ICON_URL;
 import java.awt.AWTException;
 import java.awt.MenuItem;
+import java.awt.MouseInfo;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import javafx.application.Platform;
 import javax.imageio.ImageIO;
@@ -55,7 +58,7 @@ import javax.swing.SwingUtilities;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.10.0
+ * @version 0.11.0
  * @since 0.10.0
  */
 public class SystemTrayMenuManager {
@@ -94,6 +97,67 @@ public class SystemTrayMenuManager {
 		    APPLICATION_LOGO_ICON_URL
 		));
 		systemTrayIcon.setImageAutoSize(true);
+
+		/*
+		Add an action event listener to the system tray icon which
+		displays the preferences view. The conditions which trigger an
+		action event directly on the tray icon are platform-dependent.
+		*/
+		systemTrayIcon.addActionListener((
+		    ActionEvent actionEvent
+		) -> {
+			/*
+			Queue the operation to be run asynchronously from the
+			JavaFX thread.
+			*/
+			Platform.runLater(() -> {
+				/*
+				Display the preferences view.
+				*/
+				preferencesViewManager.display();
+			});
+		});
+
+		/*
+		Because the action listener above is platform-dependent, it's
+		best to add a mouse listener which responds to double left
+		clicks as a backup.
+		*/
+		systemTrayIcon.addMouseListener(new MouseListener() {
+			/*
+			Respond to mouse click events.
+			*/
+			@Override
+			public void mouseClicked(MouseEvent mouseEvent) {
+				if (
+				    mouseEvent.getButton() == MouseEvent.BUTTON1 &&
+				    mouseEvent.getClickCount() >= 2
+				) {
+					/*
+					Queue the operation to be run asynchronously from the
+					JavaFX thread.
+					*/
+					Platform.runLater(() -> {
+						/*
+						Display the preferences view.
+						*/
+						preferencesViewManager.display();
+					});
+				}
+			}
+
+			/*
+			Ignored mouse event handlers.
+			*/
+			@Override
+			public void mousePressed(MouseEvent mouseEvent) {}
+			@Override
+			public void mouseReleased(MouseEvent mouseEvent) {}
+			@Override
+			public void mouseEntered(MouseEvent mouseEvent) {}
+			@Override
+			public void mouseExited(MouseEvent mouseEvent) {}
+		});
 
 		/*
 		Set the system tray icon's popup menu.
