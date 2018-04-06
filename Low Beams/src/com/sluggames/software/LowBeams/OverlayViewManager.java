@@ -28,6 +28,7 @@ import java.io.IOException;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -44,15 +45,12 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 /**
- * This class manages the overlay view. Although it can be instantiated prior to
- * launching the JavaFX platform, in order to use it, it must be initialized
- * exactly once by calling the {@link #initialize()} method from the JavaFX
- * application thread.
+ * This class manages the overlay view.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.10.0
+ * @version 0.12.0
  * @since 0.1.0
  */
 public class OverlayViewManager {
@@ -89,27 +87,7 @@ public class OverlayViewManager {
 				\ INITIALIZE \
 				\\\\\\\\\\\\\\
 	*/
-	/**
-	 * The stage initialization method must be called prior to this one so
-	 * that the stage can be fitted to the default target screen bounds
-	 * value.
-	 *
-	 *
-	 * @throws IllegalStateException	Stage has not been initialized.
-	 */
 	private void initializeTargetScreenProperty() {
-		/*
-		Check if the stage has not been initialized.
-		*/
-		if (stage == null) {
-			/*
-			If it hasn't, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Stage has not been initialized."
-			);
-		}
-
 		/*
 		Add a change listener to the target screen property which
 		updates the target screen bounds property.
@@ -201,22 +179,8 @@ public class OverlayViewManager {
 	*/
 	/**
 	 * @return	target screen property
-	 *
-	 * @throws IllegalStateException	Not yet initialized.
 	 */
-	public ObjectProperty<Screen> getTargetScreenProperty() {
-		/*
-		Check if the instance has yet to be initialized.
-		*/
-		if (!initialized) {
-			/*
-			If it hasn't, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Not yet initialized."
-			);
-		}
-
+	public ObjectProperty<Screen> targetScreenProperty() {
 		return targetScreenProperty;
 	}
 
@@ -225,7 +189,7 @@ public class OverlayViewManager {
 			| ENABLED |
 			-----------
 	*/
-	public static final boolean DEFAULT_ENABLED = true;
+	public static final boolean DEFAULT_ENABLED = false;
 
 	private final SimpleBooleanProperty enabledProperty =
 	    new SimpleBooleanProperty(DEFAULT_ENABLED);
@@ -263,23 +227,84 @@ public class OverlayViewManager {
 	*/
 	/**
 	 * @return	enabled property
-	 *
-	 * @throws IllegalStateException	Not yet initialized.
 	 */
-	public BooleanProperty getEnabledProperty() {
-		/*
-		Check if the instance has yet to be initialized.
-		*/
-		if (!initialized) {
-			/*
-			If it hasn't, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Not yet initialized."
-			);
-		}
-
+	public BooleanProperty enabledProperty() {
 		return enabledProperty;
+	}
+
+	/*
+			----------------------
+			| GRID LINES VISIBLE |
+			----------------------
+	*/
+	/*
+				\\\\\\\
+				\ GET \
+				\\\\\\\
+	*/
+	public BooleanProperty gridLinesVisibleProperty() {
+		return controller.gridLinesVisibleProperty();
+	}
+
+	/*
+			---------
+			| COLOR |
+			---------
+	*/
+	/*
+				\\\\\\\
+				\ GET \
+				\\\\\\\
+	*/
+	public ObjectProperty<Color> colorProperty() {
+		return controller.colorProperty();
+	}
+
+	/*
+			-----------------
+			| CURSOR WINDOW |
+			-----------------
+	*/
+	/*
+				\\\\\\\\\\\\\\\\\\\\\\
+				\ TRACKING FREQUENCY \
+				\\\\\\\\\\\\\\\\\\\\\\
+	*/
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public DoubleProperty cursorWindowTrackingFrequencyProperty() {
+		return controller.cursorWindowTrackingFrequencyProperty();
+	}
+
+	/*
+				\\\\\\\\\
+				\ WIDTH \
+				\\\\\\\\\
+	*/
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public DoubleProperty cursorWindowWidthProperty() {
+		return controller.cursorWindowWidthProperty();
+	}
+
+	/*
+				\\\\\\\\\\
+				\ HEIGHT \
+				\\\\\\\\\\
+	*/
+	/*
+					///////
+					/ GET /
+					///////
+	*/
+	public DoubleProperty cursorWindowHeightProperty() {
+		return controller.cursorWindowHeightProperty();
 	}
 
 
@@ -293,7 +318,9 @@ public class OverlayViewManager {
 			| STAGE |
 			---------
 	*/
-	private Stage stage;
+	private final Stage stage = new Stage(
+	    StageStyle.TRANSPARENT
+	);
 
 	/*
 				\\\\\\\\\\\\\\
@@ -301,11 +328,6 @@ public class OverlayViewManager {
 				\\\\\\\\\\\\\\
 	*/
 	private void initializeStage() {
-		/*
-		Create the transparent stage.
-		*/
-		stage = new Stage(StageStyle.TRANSPARENT);
-
 		/*
 		Set a window event handler to ignore close requests on the
 		overlay stage. This prevents the user from directly closing
@@ -362,13 +384,7 @@ public class OverlayViewManager {
 				\ INITIALIZE \
 				\\\\\\\\\\\\\\
 	*/
-	/**
-	 * @throws IOException		Failed to load controller FXML.
-	 */
-	private void initializeController()
-	    throws
-	    IOException
-	{
+	private void initializeController() {
 		/*
 		Load the controller's FXML file.
 		*/
@@ -377,7 +393,27 @@ public class OverlayViewManager {
 		);
 		overlayLoader.setRoot(new GridPane());
 		overlayLoader.setController(controller);
-		overlayLoader.load();
+
+		try {
+			overlayLoader.load();
+		} catch (IOException exception) {
+			/*
+			Print a descriptive error message. Eventually, the
+			application should append to a log of some sort to aid
+			in debugging outside of the IDE. For now, a simple error
+			message on the console is enough.
+			*/
+			System.err.println(
+			    "Failed to load controller FXML:\n" +
+			    exception.getMessage()
+			);
+
+			/*
+			Exit the JavaFX platform and return.
+			*/
+			Platform.exit();
+			return;
+		}
 
 		/*
 		Create a transparent scene containing the root.
@@ -418,108 +454,24 @@ public class OverlayViewManager {
 		stage.setScene(scene);
 	}
 
-	/*
-				\\\\\\\
-				\ GET \
-				\\\\\\\
-	*/
-	/**
-	 * @return	controller
-	 *
-	 * @throws IllegalStateException	Not yet initialized.
-	 */
-	public OverlayViewController getController() {
-		/*
-		Check if the instance has yet to be initialized.
-		*/
-		if (!initialized) {
-			/*
-			If it hasn't, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Not yet initialized."
-			);
-		}
-
-		return controller;
-	}
-
 
 	/*
-		**********************
-		*** INITIALIZATION ***
-		**********************
+		********************
+		*** CONSTRUCTION ***
+		********************
 	*/
-	private boolean initialized;
-
-	/*
-			------
-			| IS |
-			------
-	*/
-	public boolean isInitialized() {
-		return initialized;
-	}
-
-	/*
-			--------------
-			| INITIALIZE |
-			--------------
-	*/
-	/**
-	 * This method must be called from the JavaFX application thread, to
-	 * allow access to JavaFX resources.
-	 *
-	 *
-	 * @throws IllegalStateException	Already initialized, or not on
-	 *					JavaFX application thread.
-	 *
-	 * @throws IOException		Failed to load controller FXML.
-	 */
-	public void initialize()
-	    throws
-	    IOException
-	{
+	public OverlayViewManager() {
 		/*
-		Check if the instance has already been initialized.
-		*/
-		if (initialized) {
-			/*
-			If so, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Already initialized."
-			);
-		}
-
-		/*
-		Check if the caller is running on a thread other than the JavaFX
-		application thread.
-		*/
-		if (!Platform.isFxApplicationThread()) {
-			/*
-			If so, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Not on JavaFX application thread."
-			);
-		}
-
-		/*
-		Initialize components. This is done before initializing
-		properties because the target screen property depends on the
-		stage having been initialized.
-		*/
-		initializeStage();
-		initializeController();
-
-		/*
-		Initialize properties. This is done after initializing
-		components because the target screen property depends on the
-		stage having been initialized.
+		Initialize properties.
 		*/
 		initializeTargetScreenProperty();
 		initializeEnabledProperty();
+
+		/*
+		Initialize components.
+		*/
+		initializeStage();
+		initializeController();
 
 		/*
 		Start a new animation timer, which fires once per JavaFX pulse.
@@ -567,10 +519,5 @@ public class OverlayViewManager {
 				}
 			}
 		}.start();
-
-		/*
-		Set to initialized.
-		*/
-		initialized = true;
 	}
 }

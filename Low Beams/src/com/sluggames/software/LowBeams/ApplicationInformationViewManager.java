@@ -25,7 +25,6 @@ package com.sluggames.software.LowBeams;
 
 import com.sluggames.software.LowBeams.resources.FXML.ApplicationInformationView.ApplicationInformationViewController;
 import java.io.IOException;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -34,15 +33,12 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * This class manages the application information view. Although it can be
- * instantiated prior to launching the JavaFX platform, in order to use it, it
- * must be initialized exactly once by calling the {@link #initialize()} method
- * from the JavaFX application thread.
+ * This class manages the application information view.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.10.0
+ * @version 0.12.0
  * @since 0.10.0
  */
 public class ApplicationInformationViewManager {
@@ -120,75 +116,22 @@ public class ApplicationInformationViewManager {
 
 
 	/*
-		**********************
-		*** INITIALIZATION ***
-		**********************
-	*/
-	private boolean initialized;
-
-	/*
-			------
-			| IS |
-			------
-	*/
-	public boolean isInitialized() {
-		return initialized;
-	}
-
-	/*
-			--------------
-			| INITIALIZE |
-			--------------
+		********************
+		*** CONSTRUCTION ***
+		********************
 	*/
 	/**
-	 * This method must be called from the JavaFX application thread, to
-	 * allow access to JavaFX resources.
-	 *
-	 *
-	 * @throws IllegalStateException	Already initialized, or not on
-	 *					JavaFX application thread.
-	 *
 	 * @throws IOException		Failed to load controller FXML.
 	 */
-	public void initialize()
+	public ApplicationInformationViewManager()
 	    throws
 	    IOException
 	{
-		/*
-		Check if the instance has already been initialized.
-		*/
-		if (initialized) {
-			/*
-			If so, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Already initialized."
-			);
-		}
-
-		/*
-		Check if the caller is running on a thread other than the JavaFX
-		application thread.
-		*/
-		if (!Platform.isFxApplicationThread()) {
-			/*
-			If so, throw an exception.
-			*/
-			throw new IllegalStateException(
-			    "Not on JavaFX application thread."
-			);
-		}
-
 		/*
 		Initialize components.
 		*/
 		initializeStage();
 		initializeController();
-
-		/*
-		Set to initialized.
-		*/
-		initialized = true;
 	}
 
 

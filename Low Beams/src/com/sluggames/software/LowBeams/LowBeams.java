@@ -27,6 +27,7 @@ import java.awt.AWTException;
 import java.io.IOException;
 import java.net.URL;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
@@ -39,7 +40,7 @@ import javafx.stage.Stage;
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.11.0
+ * @version 0.12.0
  * @since 0.0.0
  */
 public class LowBeams extends Application {
@@ -114,7 +115,7 @@ public class LowBeams extends Application {
 	Upon incrementing the minor version number, the revision version number
 	should be reset to 0.
 	*/
-	public static final int MINOR_VERSION_NUMBER = 11;
+	public static final int MINOR_VERSION_NUMBER = 12;
 
 	/*
 				\\\\\\\\\\\\\\\\\\\
@@ -220,60 +221,29 @@ public class LowBeams extends Application {
 
 
 	/*
-		**************
-		*** JAVAFX ***
-		**************
-
-	In general, JavaFX component initialization should be deferred to the
-	application start method, as it is executed on the JavaFX application
-	thread after the JavaFX platform has been launched.
+		******************
+		*** COMPONENTS ***
+		******************
 	*/
 	/*
-			----------------------------
-			| PREFERENCES VIEW MANAGER |
-			----------------------------
-	*/
-	private final PreferencesViewManager preferencesViewManager =
-	    new PreferencesViewManager();
-
-	/*
-			----------------------------------------
-			| APPLICATION INFORMATION VIEW MANAGER |
-			----------------------------------------
-	*/
-	private final ApplicationInformationViewManager applicationInformationViewManager =
-	    new ApplicationInformationViewManager();
-
-	/*
-			------------------------
-			| OVERLAY VIEW MANAGER |
-			------------------------
-	*/
-	private final OverlayViewManager overlayViewManager =
-	    new OverlayViewManager();
-
-
-	/*
-		***********
-		*** AWT ***
-		***********
+			-------
+			| AWT |
+			-------
 
 	In general, AWT components should be initialized in the init method,
 	prior to starting the JavaFX application thread. According to various
 	scattered posts and bug reports, there exists the potential for
 	incompabilities between AWT and JavaFX when AWT is not initialized
-	first.
+	first. Conversely, they should be terminated in the stop method, keeping
+	consistent with the reverse ordering convention.
 	*/
 	/*
-			----------------------------
-			| SYSTEM TRAY MENU MANAGER |
-			----------------------------
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\ SYSTEM TRAY MENU MANAGER \
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 	*/
 	private final SystemTrayMenuManager systemTrayMenuManager =
-	    new SystemTrayMenuManager(
-	    preferencesViewManager,
-	    applicationInformationViewManager
-	);
+	    new SystemTrayMenuManager();
 
 
 	/*
@@ -285,11 +255,6 @@ public class LowBeams extends Application {
 			--------
 			| MAIN |
 			--------
-
-	This method is the initial entry point prior to launching the JavaFX
-	platform. Application initialization should generally be deferred to the
-	init and start methods below, but main is still required to launch in
-	some cases.
 	*/
 	public static void main(String[] args) {
 		/*
@@ -324,49 +289,38 @@ public class LowBeams extends Application {
 			---------
 			| START |
 			---------
-
-	This method is called after starting the JavaFX platform, and is
-	executed by the JavaFX application thread. Generally, this is where most
-	initialization of JavaFX components should be done.
 	*/
 	@Override
 	public void start(
 	    Stage ignoredStage
 	) {
-		try {
-			/*
-			Initialize JavaFX components.
-			*/
-			preferencesViewManager.initialize();
-			applicationInformationViewManager.initialize();
-			overlayViewManager.initialize();
+		/*
+		Disable the default implicit exit behavior whenever the last
+		JavaFX stage is closed.
+		*/
+		Platform.setImplicitExit(false);
+	}
 
-			/*
-			Bind the overlay view manager to the preferences view
-			manager so that the user can adjust the overlay's
-			properties.
-			*/
-			preferencesViewManager.bindOverlayViewManager(
-			    overlayViewManager
-			);
-		} catch (IOException exception) {
-			/*
-			Print a descriptive error message. Eventually, the
-			application should append to a log of some sort to aid
-			in debugging outside of the IDE. For now, a simple error
-			message on the console is enough.
-			*/
-			System.err.println(
-			    "Failed to load controller FXML:\n" +
-			    exception.getMessage()
-			);
 
-			/*
-			Schedule a graceful application exit with the system
-			tray menu manager, as it is responsible for properly
-			terminating both the JavaFX and AWT frameworks.
-			*/
-			systemTrayMenuManager.scheduleApplicationExit();
-		}
+	/*
+		*******************
+		*** TERMINATION ***
+		*******************
+	*/
+	/*
+			--------
+			| STOP |
+			--------
+
+	This method is executed by the JavaFX platform as it exits. It provides
+	the opportunity to terminate components which are not automatically
+	cleaned up by the JavaFX platform exit, such as AWT components.
+	*/
+	@Override
+	public void stop() {
+		/*
+		Terminate AWT components.
+		*/
+		systemTrayMenuManager.quit();
 	}
 }

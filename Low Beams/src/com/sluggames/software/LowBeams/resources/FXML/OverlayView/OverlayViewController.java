@@ -43,12 +43,13 @@ import javafx.scene.shape.Rectangle;
 /**
  * This class is the FXML controller for the overlay view. In addition to
  * exposing properties which are necessary for integration with the main
- * application logic, it also implements the cursor tracking logic internally.
+ * application logic, it also implements the cursor window tracking logic
+ * internally.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.10.0
+ * @version 0.12.0
  * @since 0.1.0
  */
 public class OverlayViewController {
@@ -61,10 +62,6 @@ public class OverlayViewController {
 			----------------------
 			| GRID LINES VISIBLE |
 			----------------------
-
-	This property is a bit unique in that it is already built into the grid
-	pane. As there is no need to create a separate property, any
-	initialization should be done as part of the grid pane's initialization.
 	*/
 	public static final boolean DEFAULT_GRID_LINES_VISIBLE = false;
 
@@ -73,7 +70,7 @@ public class OverlayViewController {
 				\ GET \
 				\\\\\\\
 	*/
-	public BooleanProperty getGridLinesVisibleProperty() {
+	public BooleanProperty gridLinesVisibleProperty() {
 		return gridPane.gridLinesVisibleProperty();
 	}
 
@@ -142,7 +139,7 @@ public class OverlayViewController {
 				\ GET \
 				\\\\\\\
 	*/
-	public ObjectProperty<Color> getColorProperty() {
+	public ObjectProperty<Color> colorProperty() {
 		return colorProperty;
 	}
 
@@ -156,56 +153,56 @@ public class OverlayViewController {
 				\ TRACKING FREQUENCY \
 				\\\\\\\\\\\\\\\\\\\\\\
 	*/
-	public static final double MINIMUM_CURSOR_TRACKING_FREQUENCY = 15;
-	public static final double MAXIMUM_CURSOR_TRACKING_FREQUENCY = 60;
-	public static final double DEFAULT_CURSOR_TRACKING_FREQUENCY = 30;
+	public static final double MINIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY = 15;
+	public static final double MAXIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY = 60;
+	public static final double DEFAULT_CURSOR_WINDOW_TRACKING_FREQUENCY = 30;
 
-	private final SimpleDoubleProperty cursorTrackingFrequencyProperty =
-	    new SimpleDoubleProperty(DEFAULT_CURSOR_TRACKING_FREQUENCY);
+	private final SimpleDoubleProperty cursorWindowTrackingFrequencyProperty =
+	    new SimpleDoubleProperty(DEFAULT_CURSOR_WINDOW_TRACKING_FREQUENCY);
 
 	/*
 					//////////////
 					/ INITIALIZE /
 					//////////////
 	*/
-	private void initializeCursorTrackingFrequencyProperty() {
+	private void initializeCursorWindowTrackingFrequencyProperty() {
 		/*
-		Add a change listener to the cursor tracking frequency property
-		which enforces the acceptable range.
+		Add a change listener to the cursor window tracking frequency
+		property which enforces the acceptable range.
 		*/
-		cursorTrackingFrequencyProperty.addListener((
-		    ObservableValue<? extends Number> cursorTrackingFrequencyObservableValue,
-		    Number cursorTrackingFrequencyOldValue,
-		    Number cursorTrackingFrequencyNewValue
+		cursorWindowTrackingFrequencyProperty.addListener((
+		    ObservableValue<? extends Number> cursorWindowTrackingFrequencyObservableValue,
+		    Number cursorWindowTrackingFrequencyOldValue,
+		    Number cursorWindowTrackingFrequencyNewValue
 		) -> {
 			/*
 			Validate the new value.
 			*/
-			if (cursorTrackingFrequencyNewValue == null) {
+			if (cursorWindowTrackingFrequencyNewValue == null) {
 				throw new NullPointerException(
-				    "cursorTrackingFrequencyNewValue == null"
+				    "cursorWindowTrackingFrequencyNewValue == null"
 				);
 			}
-			if (cursorTrackingFrequencyNewValue.doubleValue() < MINIMUM_CURSOR_TRACKING_FREQUENCY) {
+			if (cursorWindowTrackingFrequencyNewValue.doubleValue() < MINIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY) {
 				throw new IllegalArgumentException(
-				    "cursorTrackingFrequencyNewValue.doubleValue() (" + cursorTrackingFrequencyNewValue.doubleValue() + ")" +
+				    "cursorWindowTrackingFrequencyNewValue.doubleValue() (" + cursorWindowTrackingFrequencyNewValue.doubleValue() + ")" +
 				    " < " +
-				    "MINIMUM_CURSOR_TRACKING_FREQUENCY (" + MINIMUM_CURSOR_TRACKING_FREQUENCY + ")"
+				    "MINIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY (" + MINIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY + ")"
 				);
 			}
-			if (cursorTrackingFrequencyNewValue.doubleValue() > MAXIMUM_CURSOR_TRACKING_FREQUENCY) {
+			if (cursorWindowTrackingFrequencyNewValue.doubleValue() > MAXIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY) {
 				throw new IllegalArgumentException(
-				    "cursorTrackingFrequencyNewValue.doubleValue() (" + cursorTrackingFrequencyNewValue.doubleValue() + ")" +
+				    "cursorWindowTrackingFrequencyNewValue.doubleValue() (" + cursorWindowTrackingFrequencyNewValue.doubleValue() + ")" +
 				    " > " +
-				    "MAXIMUM_CURSOR_TRACKING_FREQUENCY (" + MAXIMUM_CURSOR_TRACKING_FREQUENCY + ")"
+				    "MAXIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY (" + MAXIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY + ")"
 				);
 			}
 		});
 
 		/*
 		Start a new animation timer, which is responsible for updating
-		the tracked cursor coordinates according to the cursor tracking
-		frequency.
+		the tracked cursor coordinates according to the cursor window
+		tracking frequency.
 		*/
 		new AnimationTimer() {
 			/*
@@ -249,19 +246,19 @@ public class OverlayViewController {
 				);
 
 				/*
-				Derive the cursor tracking time step from the
-				cursor tracking frequency.
+				Derive the cursor window tracking time step from
+				the cursor window tracking frequency.
 				*/
-				Duration cursorTrackingTimeStep =
+				Duration cursorWindowTrackingTimeStep =
 				    Duration.ofSeconds(1).dividedBy(
-				    cursorTrackingFrequencyProperty.getValue().longValue()
+				    cursorWindowTrackingFrequencyProperty.getValue().longValue()
 				);
 
 				/*
 				Check if the time accumulated exceeds the cursor
-				tracking time step.
+				window tracking time step.
 				*/
-				if (accumulatedTime.compareTo(cursorTrackingTimeStep) >= 0) {
+				if (accumulatedTime.compareTo(cursorWindowTrackingTimeStep) >= 0) {
 					/*
 					If so, update the tracked cursor
 					coordinates.
@@ -271,19 +268,19 @@ public class OverlayViewController {
 
 					/*
 					Repeatedly consume accumulated time in
-					chunks equal to the cursor tracking time
-					step, until left with the remainder.
-					This could technically be achieved as a
-					constant-time division operation, but
-					subtraction preserves the precision of
-					integer arithmetic, and is effectively
-					bounded above by the maximum cursor
-					tracking frequency.
+					chunks equal to the cursor window
+					tracking time step, until left with the
+					remainder. This could technically be
+					achieved as a constant-time division
+					operation, but subtraction preserves the
+					precision of integer arithmetic, and is
+					effectively bounded above by the maximum
+					cursor window tracking frequency.
 					*/
-					while (accumulatedTime.compareTo(cursorTrackingTimeStep) >= 0) {
+					while (accumulatedTime.compareTo(cursorWindowTrackingTimeStep) >= 0) {
 						accumulatedTime =
 						    accumulatedTime.minus(
-						    cursorTrackingTimeStep
+						    cursorWindowTrackingTimeStep
 						);
 					}
 				}
@@ -296,8 +293,8 @@ public class OverlayViewController {
 					/ GET /
 					///////
 	*/
-	public DoubleProperty getCursorTrackingFrequencyProperty() {
-		return cursorTrackingFrequencyProperty;
+	public DoubleProperty cursorWindowTrackingFrequencyProperty() {
+		return cursorWindowTrackingFrequencyProperty;
 	}
 
 	/*
@@ -362,7 +359,7 @@ public class OverlayViewController {
 						\ GET \
 						\\\\\\\
 	*/
-	public DoubleProperty getCursorWindowWidthProperty() {
+	public DoubleProperty cursorWindowWidthProperty() {
 		return cursorWindowWidthProperty;
 	}
 
@@ -426,7 +423,7 @@ public class OverlayViewController {
 						\ GET \
 						\\\\\\\
 	*/
-	public DoubleProperty getCursorWindowHeightProperty() {
+	public DoubleProperty cursorWindowHeightProperty() {
 		return cursorWindowHeightProperty;
 	}
 
@@ -656,7 +653,8 @@ public class OverlayViewController {
 	rectangle dimension bindings, because the high rate of change would
 	result in excessive CPU/GPU utilization. Instead, such calculations
 	should use the tracked coordinate properties below, which are
-	synchronized with the latest coordinates at a more controlled frequency.
+	synchronized with the latest coordinates according to the cursor window
+	tracking frequency.
 	*/
 	/*
 				\\\\\
@@ -677,10 +675,10 @@ public class OverlayViewController {
 			| TRACKED |
 			-----------
 
-	In addition to being synchronized with the latest cursor coordinates at
-	a more controlled frequency, these tracked cursor coordinate properties
-	enable convenient operations like binding, making them more suitable for
-	use in more expensive operations.
+	In addition to being synchronized with the latest cursor coordinates
+	according to the cursor window tracking frequency, these tracked cursor
+	coordinate properties enable convenient operations like binding, making
+	them more suitable for use in more expensive operations.
 	*/
 	/*
 				\\\\\
@@ -710,7 +708,7 @@ public class OverlayViewController {
 		Initialize properties.
 		*/
 		initializeColorProperty();
-		initializeCursorTrackingFrequencyProperty();
+		initializeCursorWindowTrackingFrequencyProperty();
 		initializeCursorWindowWidthProperty();
 		initializeCursorWindowHeightProperty();
 

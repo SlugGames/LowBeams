@@ -25,74 +25,37 @@ package com.sluggames.software.LowBeams.resources.FXML.PreferencesView;
 
 import com.sluggames.software.LowBeams.OverlayViewManager;
 import com.sluggames.software.LowBeams.resources.FXML.OverlayView.OverlayViewController;
+import com.sluggames.software.LowBeams.utility.ColorToRGBALabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToHertzFrequencyLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPercentageLabelConverter;
 import com.sluggames.software.LowBeams.utility.DoubleToPixelLabelConverter;
-import com.sluggames.software.LowBeams.utility.ScreenToShortLabelConverter;
 import java.net.URL;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 
 /**
- * This class is the FXML controller for the preferences view. It primarily
- * exposes the relevant controls, as there is not much internal logic required.
- * Currently, the only notable exception are the color controls. There are some
- * incompatibilities between the overlay functionality and the standard JavaFX
- * {@link javafx.scene.control.ColorPicker} control, so custom color controls
- * are used instead. The consolidation logic for these color controls is
- * implemented internally, and the resulting color is exposed as a property via
- * the {@link #getColorProperty()} method.
+ * This class is the FXML controller for the preferences view. It implements the
+ * logic for creating and controlling arbitrary numbers of
+ * {@link com.sluggames.software.LowBeams.OverlayViewManager} instances.
  *
  *
  * @author david.boeger@sluggames.com
  *
- * @version 0.10.0
+ * @version 0.12.0
  * @since 0.2.0
  */
 public class PreferencesViewController {
-	/*
-		******************
-		*** PROPERTIES ***
-		******************
-	*/
-	/*
-			---------
-			| COLOR |
-			---------
-	*/
-	private final SimpleObjectProperty<Color> colorProperty =
-	    new SimpleObjectProperty<>(OverlayViewController.DEFAULT_COLOR);
-
-	/*
-				\\\\\\\\\\\\\\
-				\ INITIALIZE \
-				\\\\\\\\\\\\\\
-	*/
-	private void initializeColorProperty() {
-		/*
-		There is currently nothing to initialize here, but the method is
-		provided as a guideline for future contributors.
-		*/
-	}
-
-	/*
-				\\\\\\\
-				\ GET \
-				\\\\\\\
-	*/
-	public ObjectProperty<Color> getColorProperty() {
-		return colorProperty;
-	}
-
-
 	/*
 		************
 		*** FXML ***
@@ -114,12 +77,12 @@ public class PreferencesViewController {
 			--------------
 	*/
 	/*
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-				\ TARGET SCREEN CHOICE BOX \
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				\ OVERLAY VIEW MANAGER TABLE VIEW \
+				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 	*/
 	@FXML
-	private ChoiceBox<Screen> targetScreenChoiceBox;
+	private TableView<OverlayViewManager> overlayViewManagerTableView;
 
 	/*
 					/////////
@@ -127,109 +90,337 @@ public class PreferencesViewController {
 					/////////
 	*/
 	@FXML
-	private Label targetScreenChoiceBoxLabel;
+	private Label overlayViewManagerTableViewLabel;
+
+	/*
+					///////////
+					/ CONTEXT /
+					///////////
+	*/
+	private OverlayViewManager contextOverlayViewManager;
 
 	/*
 					//////////////
 					/ INITIALIZE /
 					//////////////
 	*/
-	private void initializeTargetScreenChoiceBox() {
+	private void initializeOverlayViewManagerTableView() {
 		/*
 		Associate with the corresponding label.
 		*/
-		targetScreenChoiceBoxLabel.setLabelFor(targetScreenChoiceBox);
+		overlayViewManagerTableViewLabel.setLabelFor(
+		    overlayViewManagerTableView
+		);
+
+		/*
+		Add a change listener to the overlay view manager table view's
+		selection model which switches the control context between
+		individual overlay view managers as they are selected.
+		*/
+		overlayViewManagerTableView.getSelectionModel().selectedItemProperty().addListener((
+		    ObservableValue<? extends OverlayViewManager> overlayViewManagerObservableValue,
+		    OverlayViewManager overlayViewManagerOldValue,
+		    OverlayViewManager overlayViewManagerNewValue
+		) -> {
+			/*
+			Switch context to the newly selected overlay view
+			manager.
+			*/
+			setContext(overlayViewManagerNewValue);
+		});
+	}
+
+	/*
+				\\\\\\\\\\\\\\\\\
+				\ TABLE COLUMNS \
+				\\\\\\\\\\\\\\\\\
+	*/
+	/*
+					/////////////////
+					/ TARGET SCREEN /
+					/////////////////
+	*/
+	@FXML
+	private TableColumn<OverlayViewManager, Screen> targetScreenTableColumn;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeTargetScreenTableColumn() {
+		/*
+		Set the column's cell value factory.
+		*/
+		//targetScreenTableColumn.setCellValueFactory(
+		//    new PropertyValueFactory<>("targetScreen")
+		//);
+
+		/*
+		Set the column's cell factory.
+		*/
+		//targetScreenTableColumn.setCellFactory(
+		//    ChoiceBoxTableCell.forTableColumn(Screen.getScreens())
+		//);
 
 		/*
 		Set the target choice box's string converter to represent screen
 		objects by a short label, which is designed to appear more
 		user-friendly.
 		*/
-		targetScreenChoiceBox.setConverter(
-		    new ScreenToShortLabelConverter()
-		);
+		//targetScreenChoiceBox.setConverter(
+		//    new ScreenToShortLabelConverter()
+		//);
 
 		/*
 		Populate the target choice box with the list of available
 		screens.
 		*/
-		targetScreenChoiceBox.setItems(Screen.getScreens());
+		//targetScreenChoiceBox.setItems(Screen.getScreens());
 
 		/*
 		Set the default target screen to the primary screen.
 		*/
-		targetScreenChoiceBox.setValue(Screen.getPrimary());
+		//targetScreenChoiceBox.setValue(Screen.getPrimary());
 	}
 
 	/*
-					///////
-					/ GET /
-					///////
-	*/
-	public ChoiceBox<Screen> getTargetScreenChoiceBox() {
-		return targetScreenChoiceBox;
-	}
-
-	/*
-				\\\\\\\\\\\\\\\\\\\\\
-				\ ENABLED CHECK BOX \
-				\\\\\\\\\\\\\\\\\\\\\
+					///////////
+					/ ENABLED /
+					///////////
 	*/
 	@FXML
-	private CheckBox enabledCheckBox;
+	private TableColumn<OverlayViewManager, Boolean> enabledTableColumn;
 
 	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
 	*/
-	private void initializeEnabledCheckBox() {
+	private void initializeEnabledTableColumn() {
 		/*
-		Set the selected value according to the default in the overlay
-		manager.
+		Set the column's cell value factory.
 		*/
-		enabledCheckBox.setSelected(OverlayViewManager.DEFAULT_ENABLED
+		enabledTableColumn.setCellValueFactory(
+		    new PropertyValueFactory<>("enabled")
+		);
+
+		/*
+		Set the column's cell factory.
+		*/
+		enabledTableColumn.setCellFactory(
+		    CheckBoxTableCell.forTableColumn(
+		    enabledTableColumn
+		));
+	}
+
+	/*
+					//////////////////////
+					/ GRID LINES VISIBLE /
+					//////////////////////
+	*/
+	@FXML
+	private TableColumn<OverlayViewManager, Boolean> gridLinesVisibleTableColumn;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeGridLinesVisibleTableColumn() {
+		/*
+		Set the column's cell value factory.
+		*/
+		gridLinesVisibleTableColumn.setCellValueFactory(
+		    new PropertyValueFactory<>("gridLinesVisible")
+		);
+
+		/*
+		Set the column's cell factory.
+		*/
+		gridLinesVisibleTableColumn.setCellFactory(
+		    CheckBoxTableCell.forTableColumn(
+		    gridLinesVisibleTableColumn
+		));
+	}
+
+	/*
+					/////////
+					/ COLOR /
+					/////////
+	*/
+	@FXML
+	private TableColumn<OverlayViewManager, Color> colorTableColumn;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeColorTableColumn() {
+		/*
+		Set the column's cell value factory.
+		*/
+		colorTableColumn.setCellValueFactory(
+		    new PropertyValueFactory<>("color")
+		);
+
+		/*
+		Set the column's cell factory.
+		 */
+		colorTableColumn.setCellFactory(
+		    TextFieldTableCell.forTableColumn(
+		    new ColorToRGBALabelConverter()
+		));
+	}
+
+	/*
+					/////////////////
+					/ CURSOR WINDOW /
+					/////////////////
+	*/
+	/*
+						\\\\\\\\\\\\\\\\\\\\\\
+						\ TRACKING FREQUENCY \
+						\\\\\\\\\\\\\\\\\\\\\\
+	*/
+	@FXML
+	private TableColumn<OverlayViewManager, Double> cursorWindowTrackingFrequencyTableColumn;
+
+	/*
+							//////////////
+							/ INITIALIZE /
+							//////////////
+	*/
+	private void initializeCursorWindowTrackingFrequencyTableColumn() {
+		/*
+		Set the column's cell value factory.
+		*/
+		cursorWindowTrackingFrequencyTableColumn.setCellValueFactory(
+		    new PropertyValueFactory<>("cursorWindowTrackingFrequency")
 		);
 	}
 
 	/*
-					///////
-					/ GET /
-					///////
-	*/
-	public CheckBox getEnabledCheckBox() {
-		return enabledCheckBox;
-	}
-
-	/*
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-				\ GRID LINES VISIBLE CHECK BOX \
-				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+						\\\\\\\\\
+						\ WIDTH \
+						\\\\\\\\\
 	*/
 	@FXML
-	private CheckBox gridLinesVisibleCheckBox;
+	private TableColumn<OverlayViewManager, Double> cursorWindowWidthTableColumn;
 
 	/*
-					//////////////
-					/ INITIALIZE /
-					//////////////
+							//////////////
+							/ INITIALIZE /
+							//////////////
 	*/
-	private void initializeGridLinesVisibleCheckBox() {
+	private void initializeCursorWindowWidthTableColumn() {
 		/*
-		Set the selected value according to the default in the overlay
-		controller.
+		Set the column's cell value factory.
 		*/
-		gridLinesVisibleCheckBox.setSelected(OverlayViewController.DEFAULT_GRID_LINES_VISIBLE
+		cursorWindowWidthTableColumn.setCellValueFactory(
+		    new PropertyValueFactory<>("cursorWindowWidth")
 		);
 	}
 
 	/*
+						\\\\\\\\\\
+						\ HEIGHT \
+						\\\\\\\\\\
+	*/
+	@FXML
+	private TableColumn<OverlayViewManager, Double> cursorWindowHeightTableColumn;
+
+	/*
+							//////////////
+							/ INITIALIZE /
+							//////////////
+	*/
+	private void initializeCursorWindowHeightTableColumn() {
+		/*
+		Set the column's cell value factory.
+		*/
+		cursorWindowHeightTableColumn.setCellValueFactory(
+		    new PropertyValueFactory<>("cursorWindowHeight")
+		);
+	}
+
+	/*
+				\\\\\\\\\\\\\\\\\
+				\ TABLE BUTTONS \
+				\\\\\\\\\\\\\\\\\
+	*/
+	/*
 					///////
-					/ GET /
+					/ ADD /
 					///////
 	*/
-	public CheckBox getGridLinesVisibleCheckBox() {
-		return gridLinesVisibleCheckBox;
+	@FXML
+	private Button addButton;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeAddButton() {
+		/*
+		Add an event handler to the add button which adds a new overlay
+		view manager to the table view.
+		*/
+		addButton.setOnAction((
+		    ActionEvent actionEvent
+		) -> {
+			/*
+			Add a new overlay view manager to the table view.
+			*/
+			overlayViewManagerTableView.getItems().add(
+			    new OverlayViewManager()
+			);
+		});
+	}
+
+	/*
+					//////////
+					/ REMOVE /
+					//////////
+	*/
+	@FXML
+	private Button removeButton;
+
+	/*
+						\\\\\\\\\\\\\\
+						\ INITIALIZE \
+						\\\\\\\\\\\\\\
+	*/
+	private void initializeRemoveButton() {
+		/*
+		Add an event handler to the remove button which removes the
+		current context overlay view manager.
+		*/
+		removeButton.setOnAction((
+		    ActionEvent actionEvent
+		) -> {
+			/*
+			Verify that there is a context overlay view manager.
+			*/
+			if (contextOverlayViewManager == null) {
+				throw new IllegalStateException(
+				    "There is currently no selected overlay " +
+				    "view manager context."
+				);
+			}
+			
+			contextOverlayViewManager.enabledProperty().set(false);
+
+			/*
+			Remove the current context overlay view manager. This
+			will automatically update the context.
+			*/
+			overlayViewManagerTableView.getItems().remove(
+			    contextOverlayViewManager
+			);
+		});
 	}
 
 	/*
@@ -247,10 +438,6 @@ public class PreferencesViewController {
 						\ RED \
 						\\\\\\\
 	*/
-	public static final int RED_SLIDER_MAJOR_TICK_COUNT = 4;
-	public static final int RED_SLIDER_MINOR_TICK_COUNT =
-	    RED_SLIDER_MAJOR_TICK_COUNT - 2;
-
 	@FXML
 	private Slider redSlider;
 
@@ -267,6 +454,10 @@ public class PreferencesViewController {
 							/ INITIALIZE /
 							//////////////
 	*/
+	public static final int RED_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int RED_SLIDER_MINOR_TICK_COUNT =
+	    RED_SLIDER_MAJOR_TICK_COUNT - 2;
+
 	private void initializeRedSlider() {
 		/*
 		Associate with the corresponding label.
@@ -281,12 +472,6 @@ public class PreferencesViewController {
 		redSlider.setMax(Color.WHITE.getRed());
 
 		/*
-		Set the slider's value to match the default.
-		*/
-		redSlider.setValue(OverlayViewController.DEFAULT_COLOR.getRed()
-		);
-
-		/*
 		Set the slider's tick mark attributes.
 		*/
 		redSlider.setMajorTickUnit(
@@ -298,8 +483,15 @@ public class PreferencesViewController {
 		);
 
 		/*
+		Set the slider's tick mark label attributes.
+		*/
+		redSlider.setLabelFormatter(
+		    new DoubleToPercentageLabelConverter()
+		);
+
+		/*
 		Add a change listener to the slider which propagates changes to
-		the color property.
+		the context overlay's color property.
 		*/
 		redSlider.valueProperty().addListener((
 		    ObservableValue<? extends Number> redObservableValue,
@@ -316,16 +508,40 @@ public class PreferencesViewController {
 			}
 
 			/*
-			Adjust the color property's red value to match the new
-			value.
+			Check if there is a context overlay view manager.
 			*/
-			colorProperty.set(new Color(
-			    redNewValue.doubleValue(),
-			    colorProperty.get().getGreen(),
-			    colorProperty.get().getBlue(),
-			    colorProperty.get().getOpacity()
-			));
+			if (contextOverlayViewManager != null) {
+				/*
+				If so, adjust the context color property's green
+				value to match the new value.
+				*/
+				contextOverlayViewManager.colorProperty().set(new Color(
+				    redNewValue.doubleValue(),
+				    contextOverlayViewManager.colorProperty().get().getGreen(),
+				    contextOverlayViewManager.colorProperty().get().getBlue(),
+				    contextOverlayViewManager.colorProperty().get().getOpacity()
+				));
+			}
 		});
+	}
+
+	/*
+							///////////
+							/ DISABLE /
+							///////////
+	*/
+	public static final double RED_SLIDER_DISABLED_VALUE =
+	    Color.BLACK.getRed();
+
+	private void disableRedSlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		redSlider.setDisable(true);
+		redSlider.setValue(
+		    RED_SLIDER_DISABLED_VALUE
+		);
 	}
 
 	/*
@@ -333,11 +549,6 @@ public class PreferencesViewController {
 						\ GREEN \
 						\\\\\\\\\
 	*/
-	public static final int GREEN_SLIDER_MAJOR_TICK_COUNT =
-	    RED_SLIDER_MAJOR_TICK_COUNT;
-	public static final int GREEN_SLIDER_MINOR_TICK_COUNT =
-	    GREEN_SLIDER_MAJOR_TICK_COUNT - 2;
-
 	@FXML
 	private Slider greenSlider;
 
@@ -354,6 +565,11 @@ public class PreferencesViewController {
 							/ INITIALIZE /
 							//////////////
 	*/
+	public static final int GREEN_SLIDER_MAJOR_TICK_COUNT =
+	    RED_SLIDER_MAJOR_TICK_COUNT;
+	public static final int GREEN_SLIDER_MINOR_TICK_COUNT =
+	    GREEN_SLIDER_MAJOR_TICK_COUNT - 2;
+
 	private void initializeGreenSlider() {
 		/*
 		Associate with the corresponding label.
@@ -364,14 +580,8 @@ public class PreferencesViewController {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		greenSlider.setMin(Color.BLACK.getRed());
-		greenSlider.setMax(Color.WHITE.getRed());
-
-		/*
-		Set the slider's value to match the default.
-		*/
-		greenSlider.setValue(OverlayViewController.DEFAULT_COLOR.getGreen()
-		);
+		greenSlider.setMin(Color.BLACK.getGreen());
+		greenSlider.setMax(Color.WHITE.getGreen());
 
 		/*
 		Set the slider's tick mark attributes.
@@ -385,8 +595,15 @@ public class PreferencesViewController {
 		);
 
 		/*
+		Set the slider's tick mark label attributes.
+		*/
+		greenSlider.setLabelFormatter(
+		    new DoubleToPercentageLabelConverter()
+		);
+
+		/*
 		Add a change listener to the slider which propagates changes to
-		the color property.
+		the context overlay's color property.
 		*/
 		greenSlider.valueProperty().addListener((
 		    ObservableValue<? extends Number> greenObservableValue,
@@ -403,16 +620,40 @@ public class PreferencesViewController {
 			}
 
 			/*
-			Adjust the color property's green value to match the new
-			value.
+			Check if there is a context overlay view manager.
 			*/
-			colorProperty.set(new Color(
-			    colorProperty.get().getRed(),
-			    greenNewValue.doubleValue(),
-			    colorProperty.get().getBlue(),
-			    colorProperty.get().getOpacity()
-			));
+			if (contextOverlayViewManager != null) {
+				/*
+				If so, adjust the context color property's green
+				value to match the new value.
+				*/
+				contextOverlayViewManager.colorProperty().set(new Color(
+				    contextOverlayViewManager.colorProperty().get().getRed(),
+				    greenNewValue.doubleValue(),
+				    contextOverlayViewManager.colorProperty().get().getBlue(),
+				    contextOverlayViewManager.colorProperty().get().getOpacity()
+				));
+			}
 		});
+	}
+
+	/*
+							///////////
+							/ DISABLE /
+							///////////
+	*/
+	public static final double GREEN_SLIDER_DISABLED_VALUE =
+	    Color.BLACK.getGreen();
+
+	private void disableGreenSlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		greenSlider.setDisable(true);
+		greenSlider.setValue(
+		    GREEN_SLIDER_DISABLED_VALUE
+		);
 	}
 
 	/*
@@ -420,11 +661,6 @@ public class PreferencesViewController {
 						\ BLUE \
 						\\\\\\\\
 	*/
-	public static final int BLUE_SLIDER_MAJOR_TICK_COUNT =
-	    RED_SLIDER_MAJOR_TICK_COUNT;
-	public static final int BLUE_SLIDER_MINOR_TICK_COUNT =
-	    BLUE_SLIDER_MAJOR_TICK_COUNT - 2;
-
 	@FXML
 	private Slider blueSlider;
 
@@ -441,6 +677,11 @@ public class PreferencesViewController {
 							/ INITIALIZE /
 							//////////////
 	*/
+	public static final int BLUE_SLIDER_MAJOR_TICK_COUNT =
+	    RED_SLIDER_MAJOR_TICK_COUNT;
+	public static final int BLUE_SLIDER_MINOR_TICK_COUNT =
+	    BLUE_SLIDER_MAJOR_TICK_COUNT - 2;
+
 	private void initializeBlueSlider() {
 		/*
 		Associate with the corresponding label.
@@ -451,14 +692,8 @@ public class PreferencesViewController {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		blueSlider.setMin(Color.BLACK.getRed());
-		blueSlider.setMax(Color.WHITE.getRed());
-
-		/*
-		Set the slider's value to match the default.
-		*/
-		blueSlider.setValue(OverlayViewController.DEFAULT_COLOR.getBlue()
-		);
+		blueSlider.setMin(Color.BLACK.getBlue());
+		blueSlider.setMax(Color.WHITE.getBlue());
 
 		/*
 		Set the slider's tick mark attributes.
@@ -472,8 +707,15 @@ public class PreferencesViewController {
 		);
 
 		/*
+		Set the slider's tick mark label attributes.
+		*/
+		blueSlider.setLabelFormatter(
+		    new DoubleToPercentageLabelConverter()
+		);
+
+		/*
 		Add a change listener to the slider which propagates changes to
-		the color property.
+		the context overlay's color property.
 		*/
 		blueSlider.valueProperty().addListener((
 		    ObservableValue<? extends Number> blueObservableValue,
@@ -485,21 +727,45 @@ public class PreferencesViewController {
 			*/
 			if (blueNewValue == null) {
 				throw new NullPointerException(
-				    "blueNewValue == null"
+				    "greenNewValue == null"
 				);
 			}
 
 			/*
-			Adjust the color property's blue value to match the new
-			value.
+			Check if there is a context overlay view manager.
 			*/
-			colorProperty.set(new Color(
-			    colorProperty.get().getRed(),
-			    colorProperty.get().getGreen(),
-			    blueNewValue.doubleValue(),
-			    colorProperty.get().getOpacity()
-			));
+			if (contextOverlayViewManager != null) {
+				/*
+				If so, adjust the context color property's blue
+				value to match the new value.
+				*/
+				contextOverlayViewManager.colorProperty().set(new Color(
+				    contextOverlayViewManager.colorProperty().get().getRed(),
+				    contextOverlayViewManager.colorProperty().get().getGreen(),
+				    blueNewValue.doubleValue(),
+				    contextOverlayViewManager.colorProperty().get().getOpacity()
+				));
+			}
 		});
+	}
+
+	/*
+							///////////
+							/ DISABLE /
+							///////////
+	*/
+	public static final double BLUE_SLIDER_DISABLED_VALUE =
+	    Color.BLACK.getBlue();
+
+	private void disableBlueSlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		blueSlider.setDisable(true);
+		blueSlider.setValue(
+		    BLUE_SLIDER_DISABLED_VALUE
+		);
 	}
 
 	/*
@@ -507,10 +773,6 @@ public class PreferencesViewController {
 					/ OPACITY SLIDER /
 					//////////////////
 	*/
-	public static final int OPACITY_SLIDER_MAJOR_TICK_COUNT = 4;
-	public static final int OPACITY_SLIDER_MINOR_TICK_COUNT =
-	    OPACITY_SLIDER_MAJOR_TICK_COUNT - 2;
-
 	@FXML
 	private Slider opacitySlider;
 
@@ -527,27 +789,26 @@ public class PreferencesViewController {
 						\ INITIALIZE \
 						\\\\\\\\\\\\\\
 	*/
+
+	public static final int OPACITY_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int OPACITY_SLIDER_MINOR_TICK_COUNT =
+	    OPACITY_SLIDER_MAJOR_TICK_COUNT - 2;
+
 	private void initializeOpacitySlider() {
 		/*
 		Associate with the corresponding label.
 		*/
-		opacitySliderLabel.setLabelFor(
-		    opacitySlider
-		);
+		opacitySliderLabel.setLabelFor(opacitySlider);
 
 		/*
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		opacitySlider.setMin(OverlayViewController.MINIMUM_OPACITY
+		opacitySlider.setMin(
+		    OverlayViewController.MINIMUM_OPACITY
 		);
-		opacitySlider.setMax(OverlayViewController.MAXIMUM_OPACITY
-		);
-
-		/*
-		Set the slider's value to match the default.
-		*/
-		opacitySlider.setValue(OverlayViewController.DEFAULT_OPACITY
+		opacitySlider.setMax(
+		    OverlayViewController.MAXIMUM_OPACITY
 		);
 
 		/*
@@ -570,7 +831,7 @@ public class PreferencesViewController {
 
 		/*
 		Add a change listener to the slider which propagates changes to
-		the color property.
+		the context overlay's color property.
 		*/
 		opacitySlider.valueProperty().addListener((
 		    ObservableValue<? extends Number> opacityObservableValue,
@@ -587,16 +848,40 @@ public class PreferencesViewController {
 			}
 
 			/*
-			Adjust the color property's opacity value to match the
-			new value.
+			Check if there is a context overlay view manager.
 			*/
-			colorProperty.set(new Color(
-			    colorProperty.get().getRed(),
-			    colorProperty.get().getGreen(),
-			    colorProperty.get().getBlue(),
-			    opacityNewValue.doubleValue()
-			));
+			if (contextOverlayViewManager != null) {
+				/*
+				If so, adjust the context color property's
+				opacity value to match the new value.
+				*/
+				contextOverlayViewManager.colorProperty().set(new Color(
+				    contextOverlayViewManager.colorProperty().get().getRed(),
+				    contextOverlayViewManager.colorProperty().get().getGreen(),
+				    contextOverlayViewManager.colorProperty().get().getBlue(),
+				    opacityNewValue.doubleValue()
+				));
+			}
 		});
+	}
+
+	/*
+							///////////
+							/ DISABLE /
+							///////////
+	*/
+	public static final double OPACITY_SLIDER_DISABLED_VALUE =
+	    OverlayViewController.MINIMUM_OPACITY;
+
+	private void disableOpacitySlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		opacitySlider.setDisable(true);
+		opacitySlider.setValue(
+		    OPACITY_SLIDER_DISABLED_VALUE
+		);
 	}
 
 	/*
@@ -609,12 +894,8 @@ public class PreferencesViewController {
 					/ TRACKING FREQUENCY SLIDER /
 					/////////////////////////////
 	*/
-	public static final int CURSOR_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT = 4;
-	public static final int CURSOR_TRACKING_FREQUENCY_SLIDER_MINOR_TICK_COUNT =
-	    CURSOR_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT - 2;
-
 	@FXML
-	private Slider cursorTrackingFrequencySlider;
+	private Slider cursorWindowTrackingFrequencySlider;
 
 	/*
 						\\\\\\\\\
@@ -622,63 +903,73 @@ public class PreferencesViewController {
 						\\\\\\\\\
 	*/
 	@FXML
-	private Label cursorTrackingFrequencySliderLabel;
+	private Label cursorWindowTrackingFrequencySliderLabel;
 
 	/*
 						\\\\\\\\\\\\\\
 						\ INITIALIZE \
 						\\\\\\\\\\\\\\
 	*/
-	private void initializeCursorTrackingFrequencySlider() {
+	public static final int CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_MINOR_TICK_COUNT =
+	    CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT - 2;
+
+	private void initializeCursorWindowTrackingFrequencySlider() {
 		/*
 		Associate with the corresponding label.
 		*/
-		cursorTrackingFrequencySliderLabel.setLabelFor(
-		    cursorTrackingFrequencySlider
+		cursorWindowTrackingFrequencySliderLabel.setLabelFor(
+		    cursorWindowTrackingFrequencySlider
 		);
 
 		/*
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		cursorTrackingFrequencySlider.setMin(OverlayViewController.MINIMUM_CURSOR_TRACKING_FREQUENCY
+		cursorWindowTrackingFrequencySlider.setMin(
+		    OverlayViewController.MINIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY
 		);
-		cursorTrackingFrequencySlider.setMax(OverlayViewController.MAXIMUM_CURSOR_TRACKING_FREQUENCY
-		);
-
-		/*
-		Set the slider's value to match the default.
-		*/
-		cursorTrackingFrequencySlider.setValue(OverlayViewController.DEFAULT_CURSOR_TRACKING_FREQUENCY
+		cursorWindowTrackingFrequencySlider.setMax(
+		    OverlayViewController.MAXIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY
 		);
 
 		/*
 		Set the slider's tick mark attributes.
 		*/
-		cursorTrackingFrequencySlider.setMajorTickUnit(
-		    (cursorTrackingFrequencySlider.getMax() -
-		    cursorTrackingFrequencySlider.getMin()) /
-		    (CURSOR_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT - 1)
+		cursorWindowTrackingFrequencySlider.setMajorTickUnit(
+		    (cursorWindowTrackingFrequencySlider.getMax() -
+		    cursorWindowTrackingFrequencySlider.getMin()) /
+		    (CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_MAJOR_TICK_COUNT - 1)
 		);
-		cursorTrackingFrequencySlider.setMinorTickCount(
-		    CURSOR_TRACKING_FREQUENCY_SLIDER_MINOR_TICK_COUNT
+		cursorWindowTrackingFrequencySlider.setMinorTickCount(
+		    CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_MINOR_TICK_COUNT
 		);
 
 		/*
 		Set the slider's tick mark label attributes.
 		*/
-		cursorTrackingFrequencySlider.setLabelFormatter(
+		cursorWindowTrackingFrequencySlider.setLabelFormatter(
 		    new DoubleToHertzFrequencyLabelConverter()
 		);
 	}
 
 	/*
-						\\\\\\\
-						\ GET \
-						\\\\\\\
+							///////////
+							/ DISABLE /
+							///////////
 	*/
-	public Slider getCursorTrackingFrequencySlider() {
-		return cursorTrackingFrequencySlider;
+	public static final double CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_DISABLED_VALUE =
+	    OverlayViewController.MINIMUM_CURSOR_WINDOW_TRACKING_FREQUENCY;
+
+	private void disableCursorWindowTrackingFrequencySlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		cursorWindowTrackingFrequencySlider.setDisable(true);
+		cursorWindowTrackingFrequencySlider.setValue(
+		    CURSOR_WINDOW_TRACKING_FREQUENCY_SLIDER_DISABLED_VALUE
+		);
 	}
 
 	/*
@@ -691,10 +982,6 @@ public class PreferencesViewController {
 						\ WIDTH \
 						\\\\\\\\\
 	*/
-	public static final int CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT = 4;
-	public static final int CURSOR_WINDOW_WIDTH_SLIDER_MINOR_TICK_COUNT =
-	    CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT - 2;
-
 	@FXML
 	private Slider cursorWindowWidthSlider;
 
@@ -711,6 +998,10 @@ public class PreferencesViewController {
 							/ INITIALIZE /
 							//////////////
 	*/
+	public static final int CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT = 4;
+	public static final int CURSOR_WINDOW_WIDTH_SLIDER_MINOR_TICK_COUNT =
+	    CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT - 2;
+
 	private void initializeCursorWindowWidthSlider() {
 		/*
 		Associate with the corresponding label.
@@ -723,15 +1014,11 @@ public class PreferencesViewController {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		cursorWindowWidthSlider.setMin(OverlayViewController.MINIMUM_CURSOR_WINDOW_WIDTH
+		cursorWindowWidthSlider.setMin(
+		    OverlayViewController.MINIMUM_CURSOR_WINDOW_WIDTH
 		);
-		cursorWindowWidthSlider.setMax(OverlayViewController.MAXIMUM_CURSOR_WINDOW_WIDTH
-		);
-
-		/*
-		Set the slider's value to match the default.
-		*/
-		cursorWindowWidthSlider.setValue(OverlayViewController.DEFAULT_CURSOR_WINDOW_WIDTH
+		cursorWindowWidthSlider.setMax(
+		    OverlayViewController.MAXIMUM_CURSOR_WINDOW_WIDTH
 		);
 
 		/*
@@ -752,15 +1039,55 @@ public class PreferencesViewController {
 		cursorWindowWidthSlider.setLabelFormatter(
 		    new DoubleToPixelLabelConverter()
 		);
+
+		/*
+		Add a change listener to the slider which restricts it to
+		integral values. Unfrotunately, the snap to ticks functionality
+		doesn't appear to work well for this in practice. It's unclear
+		if the tick mark placement is incorrect, the snapping is
+		imprecise, or a combination of both. Regardless, this seems to
+		be the only way to enforce the restriction.
+		*/
+		cursorWindowWidthSlider.valueProperty().addListener((
+		    ObservableValue<? extends Number> cursorWindowWidthObservableValue,
+		    Number cursorWindowWidthOldValue,
+		    Number cursorWindowWidthNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (cursorWindowWidthNewValue == null) {
+				throw new NullPointerException(
+				    "cursorWindowWidthNewValue == null"
+				);
+			}
+
+			/*
+			Set the slider value to the closest integer.
+			*/
+			cursorWindowWidthSlider.setValue(
+			    cursorWindowWidthNewValue.intValue()
+			);
+		});
 	}
 
 	/*
-							///////
-							/ GET /
-							///////
+							///////////
+							/ DISABLE /
+							///////////
 	*/
-	public Slider getCursorWindowWidthSlider() {
-		return cursorWindowWidthSlider;
+	public static final double CURSOR_WINDOW_WIDTH_SLIDER_DISABLED_VALUE =
+	    OverlayViewController.MINIMUM_CURSOR_WINDOW_WIDTH;
+
+	private void disableCursorWindowWidthSlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		cursorWindowWidthSlider.setDisable(true);
+		cursorWindowWidthSlider.setValue(
+		    CURSOR_WINDOW_WIDTH_SLIDER_DISABLED_VALUE
+		);
 	}
 
 	/*
@@ -768,11 +1095,6 @@ public class PreferencesViewController {
 						\ HEIGHT \
 						\\\\\\\\\\
 	*/
-	public static final int CURSOR_WINDOW_HEIGHT_SLIDER_MAJOR_TICK_COUNT =
-	    CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT;
-	public static final int CURSOR_WINDOW_HEIGHT_SLIDER_MINOR_TICK_COUNT =
-	    CURSOR_WINDOW_WIDTH_SLIDER_MINOR_TICK_COUNT;
-
 	@FXML
 	private Slider cursorWindowHeightSlider;
 
@@ -789,6 +1111,11 @@ public class PreferencesViewController {
 							/ INITIALIZE /
 							//////////////
 	*/
+	public static final int CURSOR_WINDOW_HEIGHT_SLIDER_MAJOR_TICK_COUNT =
+	    CURSOR_WINDOW_WIDTH_SLIDER_MAJOR_TICK_COUNT;
+	public static final int CURSOR_WINDOW_HEIGHT_SLIDER_MINOR_TICK_COUNT =
+	    CURSOR_WINDOW_WIDTH_SLIDER_MINOR_TICK_COUNT;
+
 	private void initializeCursorWindowHeightSlider() {
 		/*
 		Associate with the corresponding label.
@@ -801,15 +1128,11 @@ public class PreferencesViewController {
 		Set the range of the slider to match the acceptable range of
 		values.
 		*/
-		cursorWindowHeightSlider.setMin(OverlayViewController.MINIMUM_CURSOR_WINDOW_HEIGHT
+		cursorWindowHeightSlider.setMin(
+		    OverlayViewController.MINIMUM_CURSOR_WINDOW_HEIGHT
 		);
-		cursorWindowHeightSlider.setMax(OverlayViewController.MAXIMUM_CURSOR_WINDOW_HEIGHT
-		);
-
-		/*
-		Set the slider's value to match the default.
-		*/
-		cursorWindowHeightSlider.setValue(OverlayViewController.DEFAULT_CURSOR_WINDOW_HEIGHT
+		cursorWindowHeightSlider.setMax(
+		    OverlayViewController.MAXIMUM_CURSOR_WINDOW_HEIGHT
 		);
 
 		/*
@@ -830,15 +1153,55 @@ public class PreferencesViewController {
 		cursorWindowHeightSlider.setLabelFormatter(
 		    new DoubleToPixelLabelConverter()
 		);
+
+		/*
+		Add a change listener to the slider which restricts it to
+		integral values. Unfrotunately, the snap to ticks functionality
+		doesn't appear to work well for this in practice. It's unclear
+		if the tick mark placement is incorrect, the snapping is
+		imprecise, or a combination of both. Regardless, this seems to
+		be the only way to enforce the restriction.
+		*/
+		cursorWindowHeightSlider.valueProperty().addListener((
+		    ObservableValue<? extends Number> cursorWindowHeightObservableValue,
+		    Number cursorWindowHeightOldValue,
+		    Number cursorWindowHeightNewValue
+		) -> {
+			/*
+			Validate the new value.
+			*/
+			if (cursorWindowHeightNewValue == null) {
+				throw new NullPointerException(
+				    "cursorWindowHeightNewValue == null"
+				);
+			}
+
+			/*
+			Set the slider value to the closest integer.
+			*/
+			cursorWindowHeightSlider.setValue(
+			    cursorWindowHeightNewValue.intValue()
+			);
+		});
 	}
 
 	/*
-							///////
-							/ GET /
-							///////
+							///////////
+							/ DISABLE /
+							///////////
 	*/
-	public Slider getCursorWindowHeightSlider() {
-		return cursorWindowHeightSlider;
+	public static final double CURSOR_WINDOW_HEIGHT_SLIDER_DISABLED_VALUE =
+	    OverlayViewController.MINIMUM_CURSOR_WINDOW_HEIGHT;
+
+	private void disableCursorWindowHeightSlider() {
+		/*
+		Disable the slider, and set the slider's value to the default
+		disabled value.
+		*/
+		cursorWindowHeightSlider.setDisable(true);
+		cursorWindowHeightSlider.setValue(
+		    CURSOR_WINDOW_HEIGHT_SLIDER_DISABLED_VALUE
+		);
 	}
 
 
@@ -850,22 +1213,132 @@ public class PreferencesViewController {
 	@FXML
 	public void initialize() {
 		/*
-		Initialize properties.
-		*/
-		initializeColorProperty();
-
-		/*
 		Initialize FXML components.
 		*/
-		initializeTargetScreenChoiceBox();
-		initializeEnabledCheckBox();
-		initializeGridLinesVisibleCheckBox();
+		initializeOverlayViewManagerTableView();
+		initializeTargetScreenTableColumn();
+		initializeEnabledTableColumn();
+		initializeGridLinesVisibleTableColumn();
+		initializeColorTableColumn();
+		initializeCursorWindowTrackingFrequencyTableColumn();
+		initializeCursorWindowWidthTableColumn();
+		initializeCursorWindowHeightTableColumn();
+		initializeAddButton();
+		initializeRemoveButton();
 		initializeRedSlider();
 		initializeGreenSlider();
 		initializeBlueSlider();
 		initializeOpacitySlider();
-		initializeCursorTrackingFrequencySlider();
+		initializeCursorWindowTrackingFrequencySlider();
 		initializeCursorWindowWidthSlider();
 		initializeCursorWindowHeightSlider();
+
+		/*
+		Set the default context.
+		*/
+		setContext(contextOverlayViewManager);
+	}
+
+
+	/*
+		*******************
+		*** SET CONTEXT ***
+		*******************
+	*/
+	private void setContext(
+	    OverlayViewManager newContextOverlayViewManager
+	) {
+		/*
+		Check if there is a previous context overlay view manager bound
+		to the context controls.
+		*/
+		if (contextOverlayViewManager != null) {
+			/*
+			If so, unbind the previous context overlay view
+			manager's properties from the context controls as
+			necessary.
+			*/
+			contextOverlayViewManager.cursorWindowHeightProperty().unbind();
+			contextOverlayViewManager.cursorWindowWidthProperty().unbind();
+			contextOverlayViewManager.cursorWindowTrackingFrequencyProperty().unbind();
+		}
+
+		/*
+		Update the context overlay view manager field to the new
+		context. It is important to perform this step prior to adjusting
+		any context control values to avoid propagating unwanted changes
+		to the previous context overlay view manager.
+		*/
+		contextOverlayViewManager = newContextOverlayViewManager;
+
+		/*
+		Check if there is a new context overlay view manager.
+		*/
+		if (contextOverlayViewManager == null) {
+			/*
+			If not, disable all context controls.
+			*/
+			disableCursorWindowHeightSlider();
+			disableCursorWindowWidthSlider();
+			disableCursorWindowTrackingFrequencySlider();
+			disableOpacitySlider();
+			disableBlueSlider();
+			disableGreenSlider();
+			disableRedSlider();
+			removeButton.setDisable(true);
+		} else {
+			/*
+			Otherwise, set the values of the context controls to
+			match the current values of the corresponding properties
+			which they will control.
+			*/
+			redSlider.setValue(
+			    contextOverlayViewManager.colorProperty().get().getRed()
+			);
+			greenSlider.setValue(
+			    contextOverlayViewManager.colorProperty().get().getGreen()
+			);
+			blueSlider.setValue(
+			    contextOverlayViewManager.colorProperty().get().getBlue()
+			);
+			opacitySlider.setValue(
+			    contextOverlayViewManager.colorProperty().get().getOpacity()
+			);
+			cursorWindowTrackingFrequencySlider.setValue(
+			    contextOverlayViewManager.cursorWindowTrackingFrequencyProperty().get()
+			);
+			cursorWindowWidthSlider.setValue(
+			    contextOverlayViewManager.cursorWindowWidthProperty().get()
+			);
+			cursorWindowHeightSlider.setValue(
+			    contextOverlayViewManager.cursorWindowHeightProperty().get()
+			);
+
+			/*
+			Bind the new context overlay view manager's properties
+			to the context controls as necessary.
+			*/
+			contextOverlayViewManager.cursorWindowTrackingFrequencyProperty().bind(
+			    cursorWindowTrackingFrequencySlider.valueProperty()
+			);
+			contextOverlayViewManager.cursorWindowWidthProperty().bind(
+			    cursorWindowWidthSlider.valueProperty()
+			);
+			contextOverlayViewManager.cursorWindowHeightProperty().bind(
+			    cursorWindowHeightSlider.valueProperty()
+			);
+
+			/*
+			Enable all context controls.
+			*/
+			removeButton.setDisable(false);
+			redSlider.setDisable(false);
+			greenSlider.setDisable(false);
+			blueSlider.setDisable(false);
+			opacitySlider.setDisable(false);
+			cursorWindowTrackingFrequencySlider.setDisable(false);
+			cursorWindowWidthSlider.setDisable(false);
+			cursorWindowHeightSlider.setDisable(false);
+		}
 	}
 }
